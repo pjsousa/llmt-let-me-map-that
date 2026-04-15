@@ -1,0 +1,17 @@
+project: YouTube Caption Search
+last_updated: 2026-03-21  # epic 6 stories added
+
+stories:
+  - id: "1.1"
+    title: "Bootstrap app and health slice"
+    status: "review"
+    epic_file: "docs/prd/epic-1-foundation-and-search.md"
+    plan:
+      - task: "Scaffold SvelteKit project with TypeScript, install dependencies (supabase-js, vitest)"
+      - task: "Create Supabase client/server utility split in $lib/supabase/"
+      - task: "Create GET /api/health endpoint returning JSON success payload"
+      - task: "Create root page with canary screen — search input shell and basic app branding"
+      - task: "Create .env.example listing all required environment variables"
+      - task: "Set up Vitest test scaffolding and write one health-route test"
+      - task: "Add setup documentation section in docs/ for env vars and local dev"
+

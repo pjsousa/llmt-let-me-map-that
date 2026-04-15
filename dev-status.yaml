@@ -1,5 +1,5 @@
 project: YouTube Caption Search
-last_updated: 2026-03-21  # epic 6 stories added
+last_updated: 2026-04-16
 
 stories:
   - id: "1.1"
@@ -14,4 +14,123 @@ stories:
       - task: "Create .env.example listing all required environment variables"
       - task: "Set up Vitest test scaffolding and write one health-route test"
       - task: "Add setup documentation section in docs/ for env vars and local dev"
-
+  - id: "E1-S1"
+    title: "Initialize IndexedDB Schema"
+    status: "Draft"
+    epic_file: "docs/epics/epic-1.md"
+    plan: []
+  - id: "E1-S2"
+    title: "Implement Project CRUD in ProjectRepository"
+    status: "Draft"
+    epic_file: "docs/epics/epic-1.md"
+    plan: []
+  - id: "E1-S3"
+    title: "Implement Phase 1 Item CRUD with Sequence Logic"
+    status: "Draft"
+    epic_file: "docs/epics/epic-1.md"
+    plan: []
+  - id: "E1-S4"
+    title: "Unit Test Sequence Integrity Scenarios"
+    status: "Draft"
+    epic_file: "docs/epics/epic-1.md"
+    plan: []
+  - id: "E2-S1"
+    title: "Implement ValidationService"
+    status: "Draft"
+    epic_file: "docs/epics/epic-2.md"
+    plan: []
+  - id: "E2-S2"
+    title: "Implement FeedbackService (Toast System)"
+    status: "Draft"
+    epic_file: "docs/epics/epic-2.md"
+    plan: []
+  - id: "E3-S1"
+    title: "Scaffold Vite + React + Tailwind Project"
+    status: "Draft"
+    epic_file: "docs/epics/epic-3.md"
+    plan: []
+  - id: "E3-S2"
+    title: "Set Up React Router with Page Shells"
+    status: "Draft"
+    epic_file: "docs/epics/epic-3.md"
+    plan: []
+  - id: "E3-S3"
+    title: "Build ProjectListPage"
+    status: "Draft"
+    epic_file: "docs/epics/epic-3.md"
+    plan: []
+  - id: "E4-S1"
+    title: "Load and Display Project on Detail Page"
+    status: "Draft"
+    epic_file: "docs/epics/epic-4.md"
+    plan: []
+  - id: "E4-S2"
+    title: "Inline Edit for Project Name"
+    status: "Draft"
+    epic_file: "docs/epics/epic-4.md"
+    plan: []
+  - id: "E4-S3"
+    title: "Inline Edit for Original Deep-Research Prompt"
+    status: "Draft"
+    epic_file: "docs/epics/epic-4.md"
+    plan: []
+  - id: "E4-S4"
+    title: "Inline Edit for Kickoff Thread URL"
+    status: "Draft"
+    epic_file: "docs/epics/epic-4.md"
+    plan: []
+  - id: "E5-S1"
+    title: "Display Phase 1 Item List"
+    status: "Draft"
+    epic_file: "docs/epics/epic-5.md"
+    plan: []
+  - id: "E5-S2"
+    title: "Add Phase 1 Prompt Block"
+    status: "Draft"
+    epic_file: "docs/epics/epic-5.md"
+    plan: []
+  - id: "E5-S3"
+    title: "Edit Phase 1 Item (Prompt Text + URLs)"
+    status: "Draft"
+    epic_file: "docs/epics/epic-5.md"
+    plan: []
+  - id: "E5-S4"
+    title: "Soft-Delete Phase 1 Item"
+    status: "Draft"
+    epic_file: "docs/epics/epic-5.md"
+    plan: []
+  - id: "E5-S5"
+    title: "Phase 1 Sequence Integrity End-to-End Verification"
+    status: "Draft"
+    epic_file: "docs/epics/epic-5.md"
+    plan: []
+  - id: "E6-S1"
+    title: "Display and Edit Phase 2 Prompt"
+    status: "Draft"
+    epic_file: "docs/epics/epic-6.md"
+    plan: []
+  - id: "E7-S1"
+    title: "Implement Progressive Disclosure on Detail Page"
+    status: "Draft"
+    epic_file: "docs/epics/epic-7.md"
+    plan: []
+  - id: "E7-S2"
+    title: "Add Empty States for All Sections"
+    status: "Draft"
+    epic_file: "docs/epics/epic-7.md"
+    plan: []
+  - id: "E7-S3"
+    title: "Add React Error Boundary and ErrorLogger"
+    status: "Draft"
+    epic_file: "docs/epics/epic-7.md"
+    plan: []
+  - id: "E7-S4"
+    title: "Mobile Responsive Layout Pass"
+    status: "Draft"
+    epic_file: "docs/epics/epic-7.md"
+    plan: []
+  - id: "E7-S5"
+    title: "Final QA Against Success Metrics"
+    status: "Draft"
+    epic_file: "docs/epics/epic-7.md"
+    plan: []

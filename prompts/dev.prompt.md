@@ -11,15 +11,16 @@ For the story you pick, do the following in order:
 
 1) Read the project PRD (docs/prd.md).
 2) Read the project architecture (docs/architecture.md).
-3) Read the story’s `epic_file`.
-4) Create a task plan for the story.
+3) Read the main epics file (docs/epics.md)
+4) Read the story’s `epic_file`.
+5) Create a task plan for the story.
    - Your plan must take into account any task plans from previous stories that already exist in `dev-status.yaml`.
    - Reuse relevant prior decisions and avoid conflicting with earlier completed or in-progress work.
    - Keep the plan focused on the selected story only.
-5) Write the story plan back into `dev-status.yaml` under the selected story.
-6) Implement the story.
-7) Set the story status to `review` in `dev-status.yaml`.
-8) Commit all your work for the story when you finish
+6) Write the story plan back into `dev-status.yaml` under the selected story.
+7) Implement the story.
+8) Set the story status to `review` in `dev-status.yaml`.
+9) Commit all your work for the story when you finish
 
 Additional rules:
 

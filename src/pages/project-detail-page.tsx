@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getProject, updateProject, getPhase1Items } from "@/data";
+import { getProject, updateProject, getPhase1Items, createPhase1Item } from "@/data";
 import type { Project, Phase1Item } from "@/data";
 import { useFeedbackContext } from "@/feedback";
 import { validateProjectName, validatePromptText, validateUrl } from "@/validation";
@@ -32,6 +32,11 @@ export default function ProjectDetailPage() {
   const [items, setItems] = useState<Phase1Item[]>([]);
   const [itemsLoading, setItemsLoading] = useState(true);
   const [itemsError, setItemsError] = useState(false);
+
+  const [addingPrompt, setAddingPrompt] = useState(false);
+  const [newPromptText, setNewPromptText] = useState("");
+  const [newPromptValidationError, setNewPromptValidationError] = useState("");
+  const newPromptTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (id === undefined) {
@@ -185,6 +190,37 @@ export default function ProjectDetailPage() {
     setUrlDraft("");
   };
 
+  const handleStartAddPrompt = () => {
+    setAddingPrompt(true);
+    setNewPromptText("");
+    setNewPromptValidationError("");
+  };
+
+  const handleSaveNewPrompt = async () => {
+    const trimmed = newPromptText.trim();
+    const validation = validatePromptText(trimmed);
+    if (!validation.valid) {
+      setNewPromptValidationError(validation.errors[0].message);
+      return;
+    }
+    const result = await createPhase1Item(project!.id, trimmed);
+    if (result.success) {
+      addSuccess("Prompt block added");
+      await refreshItems();
+      setAddingPrompt(false);
+      setNewPromptText("");
+      setNewPromptValidationError("");
+    } else {
+      addError(result.error);
+    }
+  };
+
+  const handleCancelAddPrompt = () => {
+    setAddingPrompt(false);
+    setNewPromptText("");
+    setNewPromptValidationError("");
+  };
+
   useEffect(() => {
     if (editingName && nameInputRef.current) {
       nameInputRef.current.focus();
@@ -202,6 +238,12 @@ export default function ProjectDetailPage() {
       urlInputRef.current.focus();
     }
   }, [editingUrl]);
+
+  useEffect(() => {
+    if (addingPrompt && newPromptTextareaRef.current) {
+      newPromptTextareaRef.current.focus();
+    }
+  }, [addingPrompt]);
 
   if (loading) {
     return (
@@ -412,9 +454,15 @@ export default function ProjectDetailPage() {
               Retry
             </button>
           </div>
-        ) : items.length === 0 ? (
+        ) : items.length === 0 && !addingPrompt ? (
           <p className="mt-2 text-gray-500">
-            No prompt blocks yet. Add your first one.
+            No prompt blocks yet.{" "}
+            <button
+              onClick={handleStartAddPrompt}
+              className="text-blue-600 hover:underline"
+            >
+              Add your first one.
+            </button>
           </p>
         ) : (
           <div className="mt-2">
@@ -453,6 +501,51 @@ export default function ProjectDetailPage() {
                 </div>
               </div>
             ))}
+            {items.length > 0 && (
+              <button
+                onClick={handleStartAddPrompt}
+                className="mt-4 text-sm text-blue-600 hover:underline"
+              >
+                Add Prompt Block
+              </button>
+            )}
+          </div>
+        )}
+
+        {addingPrompt && (
+          <div className="mt-4">
+            <textarea
+              ref={newPromptTextareaRef}
+              rows={6}
+              value={newPromptText}
+              onChange={(e) => {
+                setNewPromptText(e.target.value);
+                setNewPromptValidationError("");
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") handleCancelAddPrompt();
+              }}
+              className="border border-gray-300 rounded px-3 py-2 w-full text-gray-900"
+            />
+            {newPromptValidationError && (
+              <p className="mt-1 text-sm text-red-600">
+                {newPromptValidationError}
+              </p>
+            )}
+            <div className="mt-2 flex gap-2">
+              <button
+                onClick={handleSaveNewPrompt}
+                className="bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800"
+              >
+                Save
+              </button>
+              <button
+                onClick={handleCancelAddPrompt}
+                className="border border-gray-300 rounded px-4 py-2 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         )}
       </section>

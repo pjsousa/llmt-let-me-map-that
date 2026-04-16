@@ -223,7 +223,7 @@ stories:
       - "Verify npm test passes (existing tests unchanged; no new tests needed for this display-only UI component)"
   - id: "E5-S2"
     title: "Add Phase 1 Prompt Block"
-    status: "Draft"
+    status: "review"
     epic_file: "docs/epics/epic-5.md"
     plan:
       - "Add state variables to ProjectDetailPage for the add-prompt flow: addingPrompt (boolean, initial false), newPromptText (string, initial empty), newPromptValidationError (string, initial empty)"

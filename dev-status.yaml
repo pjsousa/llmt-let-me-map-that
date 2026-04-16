@@ -76,7 +76,7 @@ stories:
       - "Run npm test and npm run typecheck to verify all tests pass and types are correct"
   - id: "E2-S2"
     title: "Implement FeedbackService (Toast System)"
-    status: "Draft"
+    status: "review"
     epic_file: "docs/epics/epic-2.md"
     plan:
       - "Create src/feedback/types.ts — define Toast type: { id: string; message: string; kind: 'success' | 'error'; createdAt: number } and FeedbackAction type (discriminated union: { type: 'ADD_SUCCESS'; message: string } | { type: 'ADD_ERROR'; message: string } | { type: 'DISMISS'; id: string }) and FeedbackState type (Toast[]); these are pure types with no React dependency"

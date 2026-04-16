@@ -294,8 +294,7 @@ stories:
     status: "Draft"
     epic_file: "docs/epics/epic-6.md"
     plan:
-      - "Add state variables to ProjectDetailPage for the Phase 2 inline-edit pattern: editingPhase2 (boolean, initial false), phase2Draft (string), phase2ValidationError (string, initial empty)"
-      - "Add a useRef<HTMLTextAreaElement> for auto-focusing the Phase 2 textarea when entering edit mode, consistent with the prompt and item edit patterns"
+      - "SKIP — state variables editingPhase2, phase2Draft, phase2ValidationError and useRef phase2TextareaRef already exist in project-detail-page.tsx (lines 52-55); no additions needed"
       - "Add handleStartEditPhase2 function: set phase2Draft to project.phase2Prompt (or empty string if undefined/null), set editingPhase2 to true, clear phase2ValidationError"
       - "Add handleSavePhase2 async function: trim phase2Draft, call validatePromptText(trimmed) — if invalid set phase2ValidationError to the first error message and return; if valid call updateProject(project!.id, { phase2Prompt: trimmed }), on success update local project state with the returned project, set editingPhase2 to false, call addSuccess('Phase 2 prompt saved'), on failure call addError with the error message"
       - "Add handleCancelEditPhase2 function: set editingPhase2 to false, clear phase2ValidationError, reset phase2Draft"

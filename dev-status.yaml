@@ -161,7 +161,17 @@ stories:
     title: "Inline Edit for Project Name"
     status: "Draft"
     epic_file: "docs/epics/epic-4.md"
-    plan: []
+    plan:
+      - "Add local UI state variables to ProjectDetailPage for the inline-edit pattern: editingName (boolean, initial false), nameDraft (string, initialized from project.name when entering edit mode), and nameValidationError (string, initial empty string)"
+      - "Convert the project name h2 section in ProjectDetailPage from static display to a two-mode render: display mode shows the project name as text with an 'Edit' button (styled as text-blue-600 text-sm hover:underline); edit mode shows a text input pre-filled with nameDraft, an inline validation error message below the input (conditionally rendered, text-red-600 text-sm), a 'Save' button (bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800), and a 'Cancel' button (border border-gray-300 rounded px-4 py-2 hover:bg-gray-50)"
+      - "Add handleStartEditName function: set nameDraft to project.name, set editingName to true, clear nameValidationError"
+      - "Add handleSaveName async function: trim nameDraft, call validateProjectName(trimmed), if invalid set nameValidationError to the first error message and return; if valid call updateProject(project.id, { name: trimmed }), on success update local project state with the returned project, set editingName to false, call addSuccess('Project name updated'), on failure call addError with the error message"
+      - "Add handleCancelEditName function: set editingName to false, clear nameValidationError, reset nameDraft"
+      - "Clear nameValidationError in the name input's onChange handler whenever the user types (set nameDraft to the input value and set nameValidationError to empty string)"
+      - "Handle Enter key in the name input to call handleSaveName, and Escape key to call handleCancelEditName"
+      - "Style the name input consistently with the project list page input (border border-gray-300 rounded px-3 py-2) and ensure it auto-focuses when entering edit mode (use autoFocus or a useEffect that focuses the input)"
+      - "Verify npm run typecheck passes with no type errors"
+      - "Verify npm test passes (existing tests unchanged; no new tests needed for this UI component)"
   - id: "E4-S3"
     title: "Inline Edit for Original Deep-Research Prompt"
     status: "Draft"

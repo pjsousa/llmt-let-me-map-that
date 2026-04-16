@@ -380,10 +380,10 @@ stories:
       - "Manual verification: open the app in a browser at 375px viewport width and confirm (a) project list page is usable with full-width input, stacked name+date, and no horizontal overflow; (b) project detail page scrolls without horizontal overflow, all sections are accessible, URLs wrap correctly, Edit/Expand/Save/Cancel buttons are visible and not pushed off-screen, expanded sections have comfortable content width, and toasts stay within the viewport"
   - id: "E7-S5"
     title: "Final QA Against Success Metrics"
-    status: "Draft"
+    status: "review"
     epic_file: "docs/epics/epic-7.md"
     plan:
-      - "Run npm run typecheck and npm test to confirm the codebase is in a clean state before manual testing; fix any failures before proceeding"
+      - "Run npm run typecheck and npm test to confirm the codebase is in a clean state before manual testing; fix any failures before proceeding — PASS: typecheck clean, 41/41 tests passing, build succeeds"
       - "Test: Project creation success rate (target ≥95%) — from the project list page, create 5 new projects with valid names; verify each creation succeeds, a success toast fires, and the app navigates to the detail page with the project name displayed; attempt 1 creation with an empty/whitespace-only name and verify validation blocks it with an error message; record success rate as successful valid creations / total valid attempts"
       - "Test: Resume speed (target <10 seconds) — create a project with saved original prompt, kickoff thread URL, and at least 3 Phase 1 items each with conversation URLs; navigate back to the project list; click the project to reopen it; measure time from click to all project data fully rendered; click a conversation URL link to open it in a new tab; verify total time from project list click to link-open is under 10 seconds; repeat for 2-3 different projects to confirm consistency"
       - "Test: Capture speed for Phase 1 (target <20 seconds) — open an existing project detail page; expand the Phase 1 section if collapsed; click the add-prompt action; type a short prompt text (2-3 sentences); click Save; measure time from clicking add to seeing the success toast and the new item appear in the list with correct sequence number; verify under 20 seconds at a normal typing pace"

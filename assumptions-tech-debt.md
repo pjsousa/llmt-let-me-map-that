@@ -38,3 +38,47 @@
 
 - **Stale steps 1 and 2 (already implemented):** The original E7-S4 plan included two steps for App.tsx (add overflow-x-hidden, responsive padding) and toast-container.tsx (add left-4 sm:left-auto, max-w constraint). Both files already have these responsive styles — App.tsx has `overflow-x-hidden`, `px-4 sm:px-6` on header and main, and toast-container.tsx has `left-4 sm:left-auto` and `max-w-[calc(100vw-2rem)]`. These were likely added during E3-S1 scaffolding or E7-S1 progressive disclosure. Refinement: removed the two stale steps and replaced with a note that those files already have the needed responsive styles.
 - **Phase 1 collapsed view itemsError edge case (pre-existing, out of scope):** In the collapsed Phase 1 section of project-detail-page.tsx, when `itemsLoading` is false, `itemsError` is true, and `items.length === 0`, the code shows "No prompt blocks yet." with an "Add" button instead of an error indicator. This is a minor UX issue from E7-S1 but not a mobile responsiveness concern — recording here as future tech debt rather than fixing in E7-S4.
+
+## 2026-04-16 — E7-S5 Final QA Results
+
+### Automated Checks — PASS
+- `npm run typecheck`: PASS (no type errors)
+- `npm test`: PASS (41/41 tests passing)
+- `npm run build`: PASS (production build succeeds)
+
+### Sequence Integrity — PASS (verified via unit tests)
+- Empty project: first item gets sequenceNumber 1 ✓
+- Consecutive adds: sequence numbers 1, 2, 3 ✓
+- Delete gap: deleted sequence number is never reused ✓
+- Delete middle add: new items get correct numbers, deleted item retains original number ✓
+- All deleted then add: sequence continues from max deleted number + 1 ✓
+- Cross-project isolation: sequence numbers independent per project ✓
+- getPhase1Items excludes soft-deleted and sorts ascending ✓
+- Reload/reopen: items and sequence numbers persist after database close and reopen ✓
+- Update immutability: sequenceNumber and projectId cannot be changed via update ✓
+
+### Code Review Findings — PASS
+- Project creation flow: validates empty names, creates project in IndexedDB, fires success toast, navigates to detail page. No blocking issues.
+- Save operations: all paths validate input, call repository, show success/error toasts, update local state. No blocking issues.
+- Progressive disclosure: effectiveExpandedSection correctly prioritizes editing states > manual expansion > first unfilled section. No blocking issues.
+- Error handling: all repository methods catch errors and return typed Result errors. Invalid project ID redirects to list. Error boundary catches uncaught exceptions. No blocking issues.
+- Mobile responsiveness: responsive classes applied (w-full, flex-wrap, break-all, overflow-x-hidden, etc.). No blocking issues.
+- Form validation: validateProjectName rejects empty/whitespace; validateUrl rejects malformed URLs and allows empty; validatePromptText rejects empty/whitespace. No blocking issues.
+- Toast system: addSuccess/addError/dismiss all work correctly. Auto-dismiss at 3 seconds. Minor note: toast timers reset for existing toasts when a new toast is added (cosmetic, not blocking).
+
+### Known Non-Blocking Issues (previously documented)
+- Optional prompt fields (originalPrompt, phase2Prompt) cannot be cleared once set — by design for MVP, documented in E6-S1 assumptions.
+- Collapsed Phase 1 with itemsError and empty items shows "No prompt blocks yet" instead of error message — minor UX, documented in E7-S4 assumptions.
+- Toast auto-dismiss timers reset for existing toasts when new toasts are added — cosmetic, each toast eventually dismisses.
+
+### Manual Browser Verification Needed (cannot be automated)
+The following success metric scenarios require manual browser testing:
+- Project creation success rate ≥95% (visual confirmation of UI flow)
+- Resume speed <10 seconds (timing measurement)
+- Capture speed <20 seconds (timing measurement)
+- Progressive disclosure visual behavior (visual confirmation)
+- Mobile responsiveness at 375px viewport (visual confirmation)
+- Core workflow completion without confusion (subjective UX assessment)
+
+### Conclusion
+All automated checks pass. Code review finds no blocking defects. Sequence integrity is verified at unit-test level with 100% coverage of the specified scenarios. The remaining verification steps are manual browser tests that require human interaction and visual confirmation.

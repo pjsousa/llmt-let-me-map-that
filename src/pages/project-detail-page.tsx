@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getProject, updateProject } from "@/data";
 import type { Project } from "@/data";
 import { useFeedbackContext } from "@/feedback";
-import { validateProjectName } from "@/validation";
+import { validateProjectName, validatePromptText } from "@/validation";
 import { RESEARCH_SPACE_URL } from "@/constants";
 
 export default function ProjectDetailPage() {
@@ -18,6 +18,11 @@ export default function ProjectDetailPage() {
   const [nameDraft, setNameDraft] = useState("");
   const [nameValidationError, setNameValidationError] = useState("");
   const nameInputRef = useRef<HTMLInputElement>(null);
+
+  const [editingPrompt, setEditingPrompt] = useState(false);
+  const [promptDraft, setPromptDraft] = useState("");
+  const [promptValidationError, setPromptValidationError] = useState("");
+  const promptTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (id === undefined) {
@@ -75,11 +80,48 @@ export default function ProjectDetailPage() {
     setNameDraft("");
   };
 
+  const handleStartEditPrompt = () => {
+    setPromptDraft(project!.originalPrompt ?? "");
+    setEditingPrompt(true);
+    setPromptValidationError("");
+  };
+
+  const handleSavePrompt = async () => {
+    const trimmed = promptDraft.trim();
+    const validation = validatePromptText(trimmed);
+    if (!validation.valid) {
+      setPromptValidationError(validation.errors[0].message);
+      return;
+    }
+    const result = await updateProject(project!.id, {
+      originalPrompt: trimmed,
+    });
+    if (result.success) {
+      setProject(result.data);
+      setEditingPrompt(false);
+      addSuccess("Original prompt saved");
+    } else {
+      addError(result.error);
+    }
+  };
+
+  const handleCancelEditPrompt = () => {
+    setEditingPrompt(false);
+    setPromptValidationError("");
+    setPromptDraft("");
+  };
+
   useEffect(() => {
     if (editingName && nameInputRef.current) {
       nameInputRef.current.focus();
     }
   }, [editingName]);
+
+  useEffect(() => {
+    if (editingPrompt && promptTextareaRef.current) {
+      promptTextareaRef.current.focus();
+    }
+  }, [editingPrompt]);
 
   if (loading) {
     return (
@@ -145,14 +187,55 @@ export default function ProjectDetailPage() {
 
       <section className="mt-6">
         <h3 className="text-lg font-medium text-gray-900">Original Prompt</h3>
-        {project.originalPrompt ? (
-          <div className="mt-2 whitespace-pre-wrap text-gray-700">
-            {project.originalPrompt}
+        {editingPrompt ? (
+          <div className="mt-2">
+            <textarea
+              ref={promptTextareaRef}
+              rows={6}
+              value={promptDraft}
+              onChange={(e) => {
+                setPromptDraft(e.target.value);
+                setPromptValidationError("");
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") handleCancelEditPrompt();
+              }}
+              className="border border-gray-300 rounded px-3 py-2 w-full text-gray-900"
+            />
+            {promptValidationError && (
+              <p className="mt-1 text-sm text-red-600">{promptValidationError}</p>
+            )}
+            <div className="mt-2 flex gap-2">
+              <button
+                onClick={handleSavePrompt}
+                className="bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800"
+              >
+                Save
+              </button>
+              <button
+                onClick={handleCancelEditPrompt}
+                className="border border-gray-300 rounded px-4 py-2 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         ) : (
-          <p className="mt-2 italic text-gray-400">
-            No original prompt yet.
-          </p>
+          <div className="mt-2">
+            {project.originalPrompt ? (
+              <div className="whitespace-pre-wrap text-gray-700">
+                {project.originalPrompt}
+              </div>
+            ) : (
+              <p className="italic text-gray-400">Add your deep-research prompt.</p>
+            )}
+            <button
+              onClick={handleStartEditPrompt}
+              className="mt-1 text-sm text-blue-600 hover:underline"
+            >
+              Edit
+            </button>
+          </div>
         )}
       </section>
 

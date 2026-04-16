@@ -174,7 +174,7 @@ stories:
       - "Verify npm test passes (existing tests unchanged; no new tests needed for this UI component)"
   - id: "E4-S3"
     title: "Inline Edit for Original Deep-Research Prompt"
-    status: "Draft"
+    status: "review"
     epic_file: "docs/epics/epic-4.md"
     plan:
       - "Add local UI state variables to ProjectDetailPage for the original prompt inline-edit pattern: editingPrompt (boolean, initial false), promptDraft (string), promptValidationError (string, initial empty string)"

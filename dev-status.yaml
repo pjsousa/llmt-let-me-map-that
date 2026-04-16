@@ -112,7 +112,7 @@ stories:
       - "Verify npm test still passes (existing tests unchanged)"
   - id: "E3-S2"
     title: "Set Up React Router with Page Shells"
-    status: "Draft"
+    status: "review"
     epic_file: "docs/epics/epic-3.md"
     plan:
       - "Install react-router-dom as a dependency (npm install react-router-dom)"

@@ -126,7 +126,7 @@ stories:
       - "Note: BrowserRouter is used for clean URLs; deployment targets (Vercel, Netlify) support SPA fallback natively. For GitHub Pages, a _redirects or 404.html fallback may be needed — recorded as future tech debt if GitHub Pages is chosen"
   - id: "E3-S3"
     title: "Build ProjectListPage"
-    status: "Draft"
+    status: "review"
     epic_file: "docs/epics/epic-3.md"
     plan:
       - "Replace src/pages/project-list-page.tsx shell with a functional React component: add imports for useState/useEffect from React, useNavigate from react-router-dom, getAllProjects/createProject/Project from @/data, validateProjectName from @/validation, useFeedbackContext from @/feedback"

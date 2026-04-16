@@ -17,7 +17,14 @@ stories:
     title: "Implement Project CRUD in ProjectRepository"
     status: "Draft"
     epic_file: "docs/epics/epic-1.md"
-    plan: []
+    plan:
+      - "Define Project TypeScript type/interface mirroring the data model (id, name, originalPrompt, kickoffThreadUrl, phase2Prompt, createdAt, updatedAt)"
+      - "Implement createProject(name) — generate UUID via crypto.randomUUID(), set createdAt/updatedAt to ISO strings, initialize optional fields as empty strings, write to IndexedDB projects store, return Result<Project>"
+      - "Implement getProject(id) — read from projects store by key, return Result<Project> with error string if not found"
+      - "Implement getAllProjects() — read all projects from store, sort by updatedAt descending, return Result<Project[]>"
+      - "Implement updateProject(id, fields) — read existing project, merge partial fields (reject attempts to change id), set updatedAt to new ISO string, write back, return Result<Project>"
+      - "Ensure all four methods return Result<T> — no thrown exceptions; all IndexedDB errors caught and returned as error results"
+      - "Verify methods work against the IndexedDB schema established in E1-S1 (projects store with keyPath: id)"
   - id: "E1-S3"
     title: "Implement Phase 1 Item CRUD with Sequence Logic"
     status: "Draft"

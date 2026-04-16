@@ -240,7 +240,7 @@ stories:
       - "Verify npm test passes (existing tests unchanged; no new tests needed for this UI component)"
   - id: "E5-S3"
     title: "Edit Phase 1 Item (Prompt Text + URLs)"
-    status: "Draft"
+    status: "review"
     epic_file: "docs/epics/epic-5.md"
     plan:
       - "Add state variables to ProjectDetailPage for per-item inline editing: editingItemId (string | null, initial null), editPromptDraft (string), editConversationUrlDraft (string), editArtifactUrlDraft (string), editPromptValidationError (string, initial empty), editConversationUrlValidationError (string, initial empty), editArtifactUrlValidationError (string, initial empty)"

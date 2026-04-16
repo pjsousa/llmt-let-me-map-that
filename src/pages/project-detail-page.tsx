@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getProject, updateProject, getPhase1Items, createPhase1Item } from "@/data";
+import { getProject, updateProject, getPhase1Items, createPhase1Item, updatePhase1Item } from "@/data";
 import type { Project, Phase1Item } from "@/data";
 import { useFeedbackContext } from "@/feedback";
 import { validateProjectName, validatePromptText, validateUrl } from "@/validation";
@@ -37,6 +37,15 @@ export default function ProjectDetailPage() {
   const [newPromptText, setNewPromptText] = useState("");
   const [newPromptValidationError, setNewPromptValidationError] = useState("");
   const newPromptTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [editPromptDraft, setEditPromptDraft] = useState("");
+  const [editConversationUrlDraft, setEditConversationUrlDraft] = useState("");
+  const [editArtifactUrlDraft, setEditArtifactUrlDraft] = useState("");
+  const [editPromptValidationError, setEditPromptValidationError] = useState("");
+  const [editConversationUrlValidationError, setEditConversationUrlValidationError] = useState("");
+  const [editArtifactUrlValidationError, setEditArtifactUrlValidationError] = useState("");
+  const editItemPromptRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (id === undefined) {
@@ -221,6 +230,70 @@ export default function ProjectDetailPage() {
     setNewPromptValidationError("");
   };
 
+  const handleStartEditItem = (item: Phase1Item) => {
+    setEditingItemId(item.id);
+    setEditPromptDraft(item.promptText);
+    setEditConversationUrlDraft(item.conversationUrl);
+    setEditArtifactUrlDraft(item.artifactUrl);
+    setEditPromptValidationError("");
+    setEditConversationUrlValidationError("");
+    setEditArtifactUrlValidationError("");
+  };
+
+  const handleSaveEditItem = async () => {
+    const trimmedPrompt = editPromptDraft.trim();
+    const trimmedConvUrl = editConversationUrlDraft.trim();
+    const trimmedArtUrl = editArtifactUrlDraft.trim();
+
+    const promptValidation = validatePromptText(trimmedPrompt);
+    if (!promptValidation.valid) {
+      setEditPromptValidationError(promptValidation.errors[0].message);
+      return;
+    }
+
+    const convUrlValidation = validateUrl(trimmedConvUrl);
+    if (!convUrlValidation.valid) {
+      setEditConversationUrlValidationError(convUrlValidation.errors[0].message);
+      return;
+    }
+
+    const artUrlValidation = validateUrl(trimmedArtUrl);
+    if (!artUrlValidation.valid) {
+      setEditArtifactUrlValidationError(artUrlValidation.errors[0].message);
+      return;
+    }
+
+    const result = await updatePhase1Item(editingItemId!, {
+      promptText: trimmedPrompt,
+      conversationUrl: trimmedConvUrl,
+      artifactUrl: trimmedArtUrl,
+    });
+
+    if (result.success) {
+      addSuccess("Prompt block updated");
+      await refreshItems();
+      setEditingItemId(null);
+      setEditPromptDraft("");
+      setEditConversationUrlDraft("");
+      setEditArtifactUrlDraft("");
+      setEditPromptValidationError("");
+      setEditConversationUrlValidationError("");
+      setEditArtifactUrlValidationError("");
+    } else {
+      addError(result.error);
+    }
+  };
+
+  const handleCancelEditItem = () => {
+    setEditingItemId(null);
+    setEditPromptDraft("");
+    setEditConversationUrlDraft("");
+    setEditArtifactUrlDraft("");
+    setEditPromptValidationError("");
+    setEditConversationUrlValidationError("");
+    setEditArtifactUrlValidationError("");
+  };
+
   useEffect(() => {
     if (editingName && nameInputRef.current) {
       nameInputRef.current.focus();
@@ -244,6 +317,12 @@ export default function ProjectDetailPage() {
       newPromptTextareaRef.current.focus();
     }
   }, [addingPrompt]);
+
+  useEffect(() => {
+    if (editingItemId && editItemPromptRef.current) {
+      editItemPromptRef.current.focus();
+    }
+  }, [editingItemId]);
 
   if (loading) {
     return (
@@ -471,34 +550,126 @@ export default function ProjectDetailPage() {
                 key={item.id}
                 className="mt-4 rounded border border-gray-200 bg-white p-4"
               >
-                <span className="font-semibold text-gray-900">
-                  Prompt {item.sequenceNumber}
-                </span>
-                <div className="whitespace-pre-wrap text-gray-700">
-                  {item.promptText}
-                </div>
-                <div className="mt-2 flex gap-4">
-                  {item.conversationUrl && (
-                    <a
-                      href={item.conversationUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline"
-                    >
-                      Conversation
-                    </a>
-                  )}
-                  {item.artifactUrl && (
-                    <a
-                      href={item.artifactUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline"
-                    >
-                      Artifact
-                    </a>
-                  )}
-                </div>
+                {editingItemId === item.id ? (
+                  <>
+                    <span className="font-semibold text-gray-900">
+                      Prompt {item.sequenceNumber}
+                    </span>
+                    <textarea
+                      ref={editItemPromptRef}
+                      rows={6}
+                      value={editPromptDraft}
+                      onChange={(e) => {
+                        setEditPromptDraft(e.target.value);
+                        setEditPromptValidationError("");
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Escape") handleCancelEditItem();
+                      }}
+                      className="mt-2 border border-gray-300 rounded px-3 py-2 w-full text-gray-900"
+                    />
+                    {editPromptValidationError && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {editPromptValidationError}
+                      </p>
+                    )}
+                    <label className="mt-3 block text-sm font-medium text-gray-700">
+                      Conversation URL
+                    </label>
+                    <input
+                      type="text"
+                      value={editConversationUrlDraft}
+                      onChange={(e) => {
+                        setEditConversationUrlDraft(e.target.value);
+                        setEditConversationUrlValidationError("");
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleSaveEditItem();
+                        if (e.key === "Escape") handleCancelEditItem();
+                      }}
+                      className="mt-1 border border-gray-300 rounded px-3 py-2 w-full text-gray-900"
+                    />
+                    {editConversationUrlValidationError && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {editConversationUrlValidationError}
+                      </p>
+                    )}
+                    <label className="mt-3 block text-sm font-medium text-gray-700">
+                      Artifact URL
+                    </label>
+                    <input
+                      type="text"
+                      value={editArtifactUrlDraft}
+                      onChange={(e) => {
+                        setEditArtifactUrlDraft(e.target.value);
+                        setEditArtifactUrlValidationError("");
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleSaveEditItem();
+                        if (e.key === "Escape") handleCancelEditItem();
+                      }}
+                      className="mt-1 border border-gray-300 rounded px-3 py-2 w-full text-gray-900"
+                    />
+                    {editArtifactUrlValidationError && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {editArtifactUrlValidationError}
+                      </p>
+                    )}
+                    <div className="mt-3 flex gap-2">
+                      <button
+                        onClick={handleSaveEditItem}
+                        className="bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={handleCancelEditItem}
+                        className="border border-gray-300 rounded px-4 py-2 hover:bg-gray-50"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-baseline justify-between">
+                      <span className="font-semibold text-gray-900">
+                        Prompt {item.sequenceNumber}
+                      </span>
+                      <button
+                        onClick={() => handleStartEditItem(item)}
+                        className="text-sm text-blue-600 hover:underline"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                    <div className="whitespace-pre-wrap text-gray-700">
+                      {item.promptText}
+                    </div>
+                    <div className="mt-2 flex gap-4">
+                      {item.conversationUrl && (
+                        <a
+                          href={item.conversationUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline"
+                        >
+                          Conversation
+                        </a>
+                      )}
+                      {item.artifactUrl && (
+                        <a
+                          href={item.artifactUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline"
+                        >
+                          Artifact
+                        </a>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             ))}
             {items.length > 0 && (

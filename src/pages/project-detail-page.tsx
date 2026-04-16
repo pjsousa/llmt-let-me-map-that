@@ -480,7 +480,7 @@ export default function ProjectDetailPage() {
 
       {/* Name section */}
       {effectiveExpandedSection === "name" ? (
-        <section className="mt-4 border-l-4 border-blue-500 pl-4">
+        <section className="mt-4 border-l-[3px] border-blue-500 pl-3">
           <h2 className="text-2xl font-semibold text-gray-900">
             Project Name
             {autoExpandedSection === "name" && (
@@ -506,7 +506,7 @@ export default function ProjectDetailPage() {
               {nameValidationError && (
                 <p className="mt-1 text-sm text-red-600">{nameValidationError}</p>
               )}
-              <div className="mt-2 flex gap-2">
+              <div className="mt-2 flex flex-wrap gap-2">
                 <button
                   onClick={handleSaveName}
                   className="bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800"
@@ -535,11 +535,11 @@ export default function ProjectDetailPage() {
         </section>
       ) : (
         <section className="mt-4">
-          <h2 className="text-2xl font-semibold text-gray-900">
+          <h2 className="flex flex-wrap items-center gap-2 text-2xl font-semibold text-gray-900">
             {project.name}
             <button
               onClick={handleStartEditName}
-              className="ml-3 text-sm text-blue-600 hover:underline font-normal"
+              className="text-sm text-blue-600 hover:underline font-normal"
             >
               Edit
             </button>
@@ -549,7 +549,7 @@ export default function ProjectDetailPage() {
 
       {/* Original Prompt section */}
       {effectiveExpandedSection === "originalPrompt" ? (
-        <section className="mt-6 border-l-4 border-blue-500 pl-4">
+        <section className="mt-6 border-l-[3px] border-blue-500 pl-3">
           <h3 className="text-lg font-medium text-gray-900">
             Original Prompt
             {autoExpandedSection === "originalPrompt" && (
@@ -574,7 +574,7 @@ export default function ProjectDetailPage() {
               {promptValidationError && (
                 <p className="mt-1 text-sm text-red-600">{promptValidationError}</p>
               )}
-              <div className="mt-2 flex gap-2">
+              <div className="mt-2 flex flex-wrap gap-2">
                 <button
                   onClick={handleSavePrompt}
                   className="bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800"
@@ -593,7 +593,7 @@ export default function ProjectDetailPage() {
             <div className="mt-2">
               {project.originalPrompt ? (
                 <>
-                  <div className="whitespace-pre-wrap text-gray-700">
+                  <div className="whitespace-pre-wrap break-words text-gray-700">
                     {project.originalPrompt}
                   </div>
                   <button
@@ -623,7 +623,7 @@ export default function ProjectDetailPage() {
           <div className="mt-1">
             {project.originalPrompt ? (
               <div className="flex items-start gap-2">
-                <p className="text-sm text-gray-600">{truncate(project.originalPrompt, 80)}</p>
+                <p className="min-w-0 overflow-hidden truncate text-sm text-gray-600">{truncate(project.originalPrompt, 80)}</p>
                 <button
                   onClick={() => setExpandedSection("originalPrompt")}
                   className="text-sm text-blue-600 hover:underline whitespace-nowrap"
@@ -653,7 +653,7 @@ export default function ProjectDetailPage() {
           href={RESEARCH_SPACE_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-2 inline-block text-blue-600 hover:underline"
+          className="mt-2 inline-block text-blue-600 hover:underline break-all"
         >
           {RESEARCH_SPACE_URL}
         </a>
@@ -661,7 +661,7 @@ export default function ProjectDetailPage() {
 
       {/* Kickoff Thread section */}
       {effectiveExpandedSection === "kickoffThreadUrl" ? (
-        <section className="mt-6 border-l-4 border-blue-500 pl-4">
+        <section className="mt-6 border-l-[3px] border-blue-500 pl-3">
           <h3 className="text-lg font-medium text-gray-900">
             Kickoff Thread
             {autoExpandedSection === "kickoffThreadUrl" && (
@@ -687,7 +687,7 @@ export default function ProjectDetailPage() {
               {urlValidationError && (
                 <p className="mt-1 text-sm text-red-600">{urlValidationError}</p>
               )}
-              <div className="mt-2 flex gap-2">
+              <div className="mt-2 flex flex-wrap gap-2">
                 <button
                   onClick={handleSaveUrl}
                   className="bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800"
@@ -710,7 +710,7 @@ export default function ProjectDetailPage() {
                     href={project.kickoffThreadUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
+                    className="text-blue-600 hover:underline break-all"
                   >
                     {project.kickoffThreadUrl}
                   </a>
@@ -747,13 +747,13 @@ export default function ProjectDetailPage() {
                   href={project.kickoffThreadUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-blue-600 hover:underline"
+                  className="min-w-0 break-all text-sm text-blue-600 hover:underline"
                 >
                   {project.kickoffThreadUrl}
                 </a>
                 <button
                   onClick={() => setExpandedSection("kickoffThreadUrl")}
-                  className="text-sm text-blue-600 hover:underline"
+                  className="text-sm text-blue-600 hover:underline whitespace-nowrap"
                 >
                   Expand
                 </button>
@@ -763,7 +763,7 @@ export default function ProjectDetailPage() {
                 <p className="italic text-gray-400">Paste your kickoff thread URL.</p>
                 <button
                   onClick={handleStartEditUrl}
-                  className="text-sm text-blue-600 hover:underline"
+                  className="text-sm text-blue-600 hover:underline whitespace-nowrap"
                 >
                   Edit
                 </button>
@@ -775,7 +775,7 @@ export default function ProjectDetailPage() {
 
       {/* Phase 1 Prompts section */}
       {effectiveExpandedSection === "phase1" ? (
-        <section className="mt-6 border-l-4 border-blue-500 pl-4">
+        <section className="mt-6 border-l-[3px] border-blue-500 pl-3">
           <h3 className="text-lg font-medium text-gray-900">
             Phase 1 Prompts
             {autoExpandedSection === "phase1" && (
@@ -881,7 +881,7 @@ export default function ProjectDetailPage() {
                           {editArtifactUrlValidationError}
                         </p>
                       )}
-                      <div className="mt-3 flex gap-2">
+                      <div className="mt-3 flex flex-wrap gap-2">
                         <button
                           onClick={handleSaveEditItem}
                           className="bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800"
@@ -902,7 +902,7 @@ export default function ProjectDetailPage() {
                         Delete Prompt {item.sequenceNumber}? Its number will be
                         permanently retired.
                       </p>
-                      <div className="mt-2 flex gap-2">
+                      <div className="mt-2 flex flex-wrap gap-2">
                         <button
                           onClick={handleConfirmDelete}
                           className="bg-red-600 text-white rounded px-4 py-2 hover:bg-red-500"
@@ -919,11 +919,11 @@ export default function ProjectDetailPage() {
                     </div>
                   ) : (
                     <>
-                      <div className="flex items-baseline justify-between">
+                      <div className="flex flex-wrap items-baseline justify-between gap-2">
                         <span className="font-semibold text-gray-900">
                           Prompt {item.sequenceNumber}
                         </span>
-                        <div className="flex gap-3">
+                        <div className="flex flex-wrap gap-3">
                           <button
                             onClick={() => handleStartEditItem(item)}
                             className="text-sm text-blue-600 hover:underline"
@@ -938,10 +938,10 @@ export default function ProjectDetailPage() {
                           </button>
                         </div>
                       </div>
-                      <div className="whitespace-pre-wrap text-gray-700">
+                      <div className="whitespace-pre-wrap break-words text-gray-700">
                         {item.promptText}
                       </div>
-                      <div className="mt-2 flex gap-4">
+                      <div className="mt-2 flex flex-wrap gap-4">
                         {item.conversationUrl ? (
                           <a
                             href={item.conversationUrl}
@@ -1002,7 +1002,7 @@ export default function ProjectDetailPage() {
                   {newPromptValidationError}
                 </p>
               )}
-              <div className="mt-2 flex gap-2">
+              <div className="mt-2 flex flex-wrap gap-2">
                 <button
                   onClick={handleSaveNewPrompt}
                   className="bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800"
@@ -1059,7 +1059,7 @@ export default function ProjectDetailPage() {
 
       {/* Phase 2 Prompt section */}
       {effectiveExpandedSection === "phase2" ? (
-        <section className="border-l-4 border-blue-500 pl-4">
+        <section className="border-l-[3px] border-blue-500 pl-3">
           <h3 className="text-lg font-medium text-gray-900">
             Phase 2 Prompt
             {autoExpandedSection === "phase2" && (
@@ -1084,7 +1084,7 @@ export default function ProjectDetailPage() {
               {phase2ValidationError && (
                 <p className="mt-1 text-sm text-red-600">{phase2ValidationError}</p>
               )}
-              <div className="mt-2 flex gap-2">
+              <div className="mt-2 flex flex-wrap gap-2">
                 <button
                   onClick={handleSavePhase2}
                   className="bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800"
@@ -1103,7 +1103,7 @@ export default function ProjectDetailPage() {
             <div className="mt-2">
               {project.phase2Prompt ? (
                 <>
-                  <div className="whitespace-pre-wrap text-gray-700">
+                  <div className="whitespace-pre-wrap break-words text-gray-700">
                     {project.phase2Prompt}
                   </div>
                   <button
@@ -1133,7 +1133,7 @@ export default function ProjectDetailPage() {
           <div className="mt-1">
             {project.phase2Prompt ? (
               <div className="flex items-start gap-2">
-                <p className="text-sm text-gray-600">{truncate(project.phase2Prompt, 80)}</p>
+                <p className="min-w-0 overflow-hidden truncate text-sm text-gray-600">{truncate(project.phase2Prompt, 80)}</p>
                 <button
                   onClick={() => setExpandedSection("phase2")}
                   className="text-sm text-blue-600 hover:underline whitespace-nowrap"

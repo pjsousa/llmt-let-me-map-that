@@ -97,12 +97,14 @@ export default function ProjectListPage() {
                 to={`/project/${project.id}`}
                 className="block rounded border border-gray-200 bg-white px-4 py-3 hover:bg-gray-50"
               >
-                <span className="font-medium text-gray-900">
-                  {project.name}
-                </span>
-                <span className="ml-2 text-sm text-gray-500">
-                  {new Date(project.createdAt).toLocaleDateString()}
-                </span>
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline">
+                  <span className="font-medium text-gray-900">
+                    {project.name}
+                  </span>
+                  <span className="text-sm text-gray-500 sm:ml-2">
+                    {new Date(project.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
               </Link>
             </li>
           ))}
@@ -120,7 +122,7 @@ export default function ProjectListPage() {
               if (e.key === "Enter") handleCreateProject();
             }}
             placeholder="Project name"
-            className="rounded border border-gray-300 px-3 py-2"
+            className="w-full rounded border border-gray-300 px-3 py-2"
           />
           {validationError && (
             <p className="mt-1 text-sm text-red-600">{validationError}</p>

@@ -361,7 +361,7 @@ stories:
       - "Note: The optional IndexedDB error persistence store (architecture §7.8 'Optionally, write errors to an IndexedDB errors table') is deferred as a future enhancement; E7-S3 delivers console.error logging only, which satisfies the PRD requirement for 'basic application error logging' (§7.8, §12)"
   - id: "E7-S4"
     title: "Mobile Responsive Layout Pass"
-    status: "Draft"
+    status: "review"
     epic_file: "docs/epics/epic-7.md"
     plan:
       - "Note: src/App.tsx and src/feedback/toast-container.tsx already have responsive styles from prior stories (overflow-x-hidden, px-4 sm:px-6 padding, left-4 sm:left-auto toast positioning, max-w-[calc(100vw-2rem)] toast constraint) — no changes needed to those files"

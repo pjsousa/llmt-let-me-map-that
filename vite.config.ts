@@ -1,4 +1,6 @@
 import { defineConfig } from "vitest/config";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 import { fileURLToPath } from "url";
 import { dirname, resolve } from "path";
 
@@ -6,12 +8,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default defineConfig({
-  test: {
-    setupFiles: ["./src/data/__tests__/setup.ts"],
-  },
+  plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
-      "@/*": resolve(__dirname, "src/*"),
+      "@": resolve(__dirname, "src"),
     },
+  },
+  test: {
+    setupFiles: ["./src/data/__tests__/setup.ts"],
   },
 });

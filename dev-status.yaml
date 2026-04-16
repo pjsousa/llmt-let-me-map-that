@@ -88,7 +88,7 @@ stories:
       - "Run npm test and npm run typecheck to verify all tests pass and types are correct"
   - id: "E3-S1"
     title: "Scaffold Vite + React + Tailwind Project"
-    status: "Draft"
+    status: "review"
     epic_file: "docs/epics/epic-3.md"
     plan:
       - "Install Vite and React dependencies: npm install react react-dom, npm install -D vite @vitejs/plugin-react @types/react @types/react-dom"

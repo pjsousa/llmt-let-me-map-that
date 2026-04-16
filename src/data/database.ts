@@ -42,3 +42,18 @@ export function openDatabase(): Promise<Result<PhaseboardDB>> {
 
   return dbPromise;
 }
+
+export async function closeDatabase(): Promise<void> {
+  if (dbPromise) {
+    const result = await dbPromise;
+    if (result.success) {
+      result.data.close();
+    }
+    dbPromise = null;
+  }
+}
+
+export async function resetDatabase(): Promise<void> {
+  await closeDatabase();
+  indexedDB.deleteDatabase(DB_NAME);
+}

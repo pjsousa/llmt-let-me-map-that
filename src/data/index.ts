@@ -1,6 +1,11 @@
 export type { Result } from "./result";
 export type { Project, Phase1Item } from "./types";
-export { openDatabase, type PhaseboardDB } from "./database";
+export {
+  openDatabase,
+  closeDatabase,
+  resetDatabase,
+  type PhaseboardDB,
+} from "./database";
 export {
   createProject,
   getProject,

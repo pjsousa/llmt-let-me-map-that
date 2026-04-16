@@ -42,7 +42,7 @@ stories:
       - "Verify no changes to database.ts schema — phase1Items store with projectId index already exists from E1-S1"
   - id: "E1-S4"
     title: "Unit Test Sequence Integrity Scenarios"
-    status: "Draft"
+    status: "review"
     epic_file: "docs/epics/epic-1.md"
     plan:
       - "Install vitest and fake-indexeddb as dev dependencies (npm install -D vitest fake-indexeddb)"

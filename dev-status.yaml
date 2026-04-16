@@ -18,7 +18,12 @@ stories:
     title: "Initialize IndexedDB Schema"
     status: "Draft"
     epic_file: "docs/epics/epic-1.md"
-    plan: []
+    plan:
+      - task: "Initialize a minimal TypeScript project (package.json, tsconfig.json) with idb and vitest as dependencies"
+      - task: "Create src/data/types.ts — define Result<T>, Project, and Phase1Item type interfaces matching the data model in architecture §8"
+      - task: "Create src/data/db.ts — export initDB() that opens the phaseboard database at version 1 with projects store (keyPath: id) and phase1Items store (keyPath: id, index on projectId)"
+      - task: "Wrap initDB in error handling so database open failures return { success: false, error } instead of throwing"
+      - task: "Write unit tests (using fake-indexeddb or equivalent) verifying: database opens successfully, projects store exists with keyPath id, phase1Items store exists with keyPath id, projectId index exists, and open errors surface as typed error results"
   - id: "E1-S2"
     title: "Implement Project CRUD in ProjectRepository"
     status: "Draft"

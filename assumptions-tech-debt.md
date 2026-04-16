@@ -8,3 +8,7 @@
 
 - **React dependency gap in original plan:** The original E2-S2 plan proposed creating `use-feedback.ts` (using `useReducer`), `feedback-context.ts` (using React context APIs), and `ToastContainer.ts` (a React component placeholder), but React is not installed yet — it will be added in E3-S1. These files could not type-check or run without React. Refinement: extract pure logic (types, reducer, tests) into React-free modules deliverable now; defer all React-dependent code (hook, context, component) to E3-S1.
 - **Inline validation error display scope:** The epic E2-S2 description mentions "Support inline validation error display (field-level messages)" and architecture §7.7 lists "Show inline validation errors on fields" under FeedbackService. However, this is a UI-rendering concern best handled directly by page components consuming `ValidationResult` from E2-S1, not by the toast system. Assumption: inline validation errors are out of scope for the FeedbackService toast module; they will be rendered in page components during E3–E5.
+
+## 2026-04-16 — E3-S2 plan
+
+- **BrowserRouter vs HashRouter:** E3-S2 uses BrowserRouter for clean URL paths (/project/:id). This works natively on Vercel and Netlify with SPA fallback. If the app is deployed to GitHub Pages, a _redirects or custom 404.html fallback will be needed to serve index.html for all routes. This is acceptable tech debt for MVP; if GitHub Pages becomes the deployment target, the router can be switched to HashRouter or a fallback page can be added.

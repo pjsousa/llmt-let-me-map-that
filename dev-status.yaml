@@ -114,7 +114,16 @@ stories:
     title: "Set Up React Router with Page Shells"
     status: "Draft"
     epic_file: "docs/epics/epic-3.md"
-    plan: []
+    plan:
+      - "Install react-router-dom as a dependency (npm install react-router-dom)"
+      - "Create src/pages/project-list-page.tsx — shell component with a 'Projects' heading and placeholder text; no data fetching yet (E3-S3 adds it)"
+      - "Create src/pages/project-detail-page.tsx — shell component with a 'Project Detail' heading, useParams() to extract :id from the route, and a Link back to the project list ('/'); no data fetching yet (E4-S1 adds it)"
+      - "Update src/App.tsx — replace current placeholder content with React Router setup: import BrowserRouter, Routes, Route from react-router-dom; define route / → ProjectListPage and /project/:id → ProjectDetailPage; wrap routes in BrowserRouter; keep ToastContainer rendered inside the router so toast state remains consistent during navigation; remove the 'No project selected.' placeholder text"
+      - "Keep src/main.tsx unchanged — FeedbackProvider already wraps App, and BrowserRouter will be inside App so that router context is available to ToastContainer and all page components"
+      - "Verify npm run dev starts and renders ProjectListPage at /, and ProjectDetailPage at /project/some-id with the id param accessible"
+      - "Verify npm run typecheck passes (including new route components and react-router-dom imports)"
+      - "Verify npm test still passes (existing tests unchanged)"
+      - "Note: BrowserRouter is used for clean URLs; deployment targets (Vercel, Netlify) support SPA fallback natively. For GitHub Pages, a _redirects or 404.html fallback may be needed — recorded as future tech debt if GitHub Pages is chosen"
   - id: "E3-S3"
     title: "Build ProjectListPage"
     status: "Draft"

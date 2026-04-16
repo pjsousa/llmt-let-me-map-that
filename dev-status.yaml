@@ -143,7 +143,7 @@ stories:
       - "Verify npm test passes (existing tests unchanged; no new tests needed for this UI component)"
   - id: "E4-S1"
     title: "Load and Display Project on Detail Page"
-    status: "Draft"
+    status: "review"
     epic_file: "docs/epics/epic-4.md"
     plan:
       - "Replace src/pages/project-detail-page.tsx shell with a functional component: import useState/useEffect from React, useParams/useNavigate from react-router-dom, getProject from @/data, Project type from @/data, useFeedbackContext from @/feedback"

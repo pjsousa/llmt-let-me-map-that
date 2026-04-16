@@ -273,7 +273,7 @@ stories:
       - "Verify npm test passes (existing tests unchanged; no new tests needed for this UI component)"
   - id: "E5-S5"
     title: "Phase 1 Sequence Integrity End-to-End Verification"
-    status: "Draft"
+    status: "review"
     epic_file: "docs/epics/epic-5.md"
     plan:
       - "Start the dev server (npm run dev) and open the app in a browser"

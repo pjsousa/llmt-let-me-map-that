@@ -258,7 +258,7 @@ stories:
       - "Verify npm test passes (existing tests unchanged; no new tests needed for this UI component)"
   - id: "E5-S4"
     title: "Soft-Delete Phase 1 Item"
-    status: "Draft"
+    status: "review"
     epic_file: "docs/epics/epic-5.md"
     plan:
       - "Add deletePhase1Item to the data imports from @/data in project-detail-page.tsx (already exported alongside getPhase1Items, createPhase1Item, updatePhase1Item)"

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getProject, updateProject, getPhase1Items, createPhase1Item, updatePhase1Item } from "@/data";
+import { getProject, updateProject, getPhase1Items, createPhase1Item, updatePhase1Item, deletePhase1Item } from "@/data";
 import type { Project, Phase1Item } from "@/data";
 import { useFeedbackContext } from "@/feedback";
 import { validateProjectName, validatePromptText, validateUrl } from "@/validation";
@@ -46,6 +46,8 @@ export default function ProjectDetailPage() {
   const [editConversationUrlValidationError, setEditConversationUrlValidationError] = useState("");
   const [editArtifactUrlValidationError, setEditArtifactUrlValidationError] = useState("");
   const editItemPromptRef = useRef<HTMLTextAreaElement>(null);
+
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
 
   useEffect(() => {
     if (id === undefined) {
@@ -292,6 +294,25 @@ export default function ProjectDetailPage() {
     setEditPromptValidationError("");
     setEditConversationUrlValidationError("");
     setEditArtifactUrlValidationError("");
+  };
+
+  const handleStartDelete = (item: Phase1Item) => {
+    setDeletingItemId(item.id);
+  };
+
+  const handleConfirmDelete = async () => {
+    const result = await deletePhase1Item(deletingItemId!);
+    if (result.success) {
+      addSuccess("Prompt block deleted");
+      await refreshItems();
+      setDeletingItemId(null);
+    } else {
+      addError(result.error);
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeletingItemId(null);
   };
 
   useEffect(() => {
@@ -630,18 +651,47 @@ export default function ProjectDetailPage() {
                       </button>
                     </div>
                   </>
+                ) : deletingItemId === item.id ? (
+                  <div>
+                    <p className="text-gray-900">
+                      Delete Prompt {item.sequenceNumber}? Its number will be
+                      permanently retired.
+                    </p>
+                    <div className="mt-2 flex gap-2">
+                      <button
+                        onClick={handleConfirmDelete}
+                        className="bg-red-600 text-white rounded px-4 py-2 hover:bg-red-500"
+                      >
+                        Delete
+                      </button>
+                      <button
+                        onClick={handleCancelDelete}
+                        className="border border-gray-300 rounded px-4 py-2 hover:bg-gray-50"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
                 ) : (
                   <>
                     <div className="flex items-baseline justify-between">
                       <span className="font-semibold text-gray-900">
                         Prompt {item.sequenceNumber}
                       </span>
-                      <button
-                        onClick={() => handleStartEditItem(item)}
-                        className="text-sm text-blue-600 hover:underline"
-                      >
-                        Edit
-                      </button>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => handleStartEditItem(item)}
+                          className="text-sm text-blue-600 hover:underline"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleStartDelete(item)}
+                          className="text-sm text-red-600 hover:underline"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                     <div className="whitespace-pre-wrap text-gray-700">
                       {item.promptText}

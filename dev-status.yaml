@@ -159,7 +159,7 @@ stories:
       - "Verify npm test passes (existing tests unchanged; no new tests needed for this UI component)"
   - id: "E4-S2"
     title: "Inline Edit for Project Name"
-    status: "Draft"
+    status: "review"
     epic_file: "docs/epics/epic-4.md"
     plan:
       - "Add local UI state variables to ProjectDetailPage for the inline-edit pattern: editingName (boolean, initial false), nameDraft (string, initialized from project.name when entering edit mode), and nameValidationError (string, initial empty string)"

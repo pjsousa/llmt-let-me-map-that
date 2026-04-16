@@ -28,7 +28,7 @@ stories:
       - "Verify methods work against the IndexedDB schema established in E1-S1 (projects store with keyPath: id)"
   - id: "E1-S3"
     title: "Implement Phase 1 Item CRUD with Sequence Logic"
-    status: "Draft"
+    status: "review"
     epic_file: "docs/epics/epic-1.md"
     plan:
       - "Define Phase1Item TypeScript type/interface mirroring the data model (id, projectId, sequenceNumber, promptText, conversationUrl, artifactUrl, deleted, createdAt, updatedAt)"

@@ -49,6 +49,11 @@ export default function ProjectDetailPage() {
 
   const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
 
+  const [editingPhase2, setEditingPhase2] = useState(false);
+  const [phase2Draft, setPhase2Draft] = useState("");
+  const [phase2ValidationError, setPhase2ValidationError] = useState("");
+  const phase2TextareaRef = useRef<HTMLTextAreaElement>(null);
+
   useEffect(() => {
     if (id === undefined) {
       navigate("/", { replace: true });

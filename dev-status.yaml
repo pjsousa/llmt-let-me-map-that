@@ -312,7 +312,7 @@ stories:
     status: "Draft"
     epic_file: "docs/epics/epic-7.md"
     plan:
-      - "Prerequisite: Add the missing Phase 2 section JSX to project-detail-page.tsx — E6-S1 state variables exist (editingPhase2, phase2Draft, phase2ValidationError, phase2TextareaRef, phase2TextareaRef handlers) but the Phase 2 <section> element and its rendering logic are absent from the return JSX. Add it between the Phase 1 </section> and the closing </div>, matching the pattern from E6-S1's plan (two-mode rendering: display mode shows phase2Prompt text or empty-state 'Add your Phase 2 prompt.', edit mode shows textarea with Save/Cancel, border-t divider, h3 heading 'Phase 2 Prompt')"
+      - "Note: The Phase 2 section JSX is already present in project-detail-page.tsx (delivered in E6-S1) — no prerequisite addition needed"
       - "Define a SectionId type in project-detail-page.tsx: 'name' | 'originalPrompt' | 'kickoffThreadUrl' | 'phase1' | 'phase2' — representing the five sections in top-to-bottom order"
       - "Add a helper function isSectionFilled(sectionId, project, items) that returns true when a section has data: name is always true (required on creation), originalPrompt is true when project.originalPrompt is non-empty, kickoffThreadUrl is true when project.kickoffThreadUrl is non-empty, phase1 is true when items.length > 0, phase2 is true when project.phase2Prompt is non-empty"
       - "Add a helper function getFirstUnfilledSection(project, items) that iterates through SectionId values in top-to-bottom order (name, originalPrompt, kickoffThreadUrl, phase1, phase2) and returns the first SectionId where isSectionFilled returns false, or null if all sections are filled"

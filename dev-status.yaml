@@ -69,10 +69,10 @@ stories:
     plan:
       - "Create src/validation/types.ts — define ValidationResult type: { valid: boolean; errors: { field: string; message: string }[] }"
       - "Create src/validation/validate-project-name.ts — implement validateProjectName(name): trim input, reject empty/whitespace-only with 'Project name is required.', return ValidationResult"
-      - "Create src/validation/validate-url.ts — implement validateUrl(url): allow empty string (valid for optional fields), reject non-empty malformed URLs using URL constructor with specific message, return ValidationResult"
+      - "Create src/validation/validate-url.ts — implement validateUrl(url): trim input, allow empty/whitespace-only (valid for optional fields), reject non-empty malformed URLs using URL constructor with specific message, return ValidationResult"
       - "Create src/validation/validate-prompt-text.ts — implement validatePromptText(text): trim input, reject empty/whitespace-only with 'Prompt text is required.', return ValidationResult"
       - "Create src/validation/index.ts barrel export — re-export all validation functions and ValidationResult type"
-      - "Create src/validation/__tests__/validation.test.ts — unit tests covering all acceptance criteria: validateProjectName with empty/whitespace/valid; validateUrl with empty/invalid/valid; validatePromptText with empty/valid; edge cases"
+      - "Create src/validation/__tests__/validation.test.ts — unit tests covering all acceptance criteria: validateProjectName with empty/whitespace/valid; validateUrl with empty/whitespace-only/invalid/valid; validatePromptText with empty/whitespace/valid; edge cases"
       - "Run npm test and npm run typecheck to verify all tests pass and types are correct"
   - id: "E2-S2"
     title: "Implement FeedbackService (Toast System)"

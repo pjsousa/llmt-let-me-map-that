@@ -335,7 +335,14 @@ stories:
     title: "Add Empty States for All Sections"
     status: "Draft"
     epic_file: "docs/epics/epic-7.md"
-    plan: []
+    plan:
+      - "Audit existing empty states against architecture specifications and prior story plans — the following section-level empty states already exist in project-detail-page.tsx and match architecture specs: Original Prompt ('Add your deep-research prompt.' — italic text-gray-400 with Edit button), Kickoff Thread ('Paste your kickoff thread URL.' — italic text-gray-400 with Edit button), Phase 1 Prompts ('No prompt blocks yet. Add your first one.' — text-gray-500 with clickable Add link), Phase 2 Prompt ('Add your Phase 2 prompt.' — italic text-gray-400 with Edit button). Project name is always filled from creation and does not need an empty state. Research Space is a read-only constant and does not need an empty state. Project list page empty state ('No projects yet. Create your first one.') already exists. No changes needed to these section-level empty states."
+      - "Add empty-state placeholder text for missing conversationUrl within Phase 1 item cards: when item.conversationUrl is empty/undefined, render an inline hint 'No conversation link' styled with italic text-gray-400 inside the Phase 1 item card's link row, so the user knows the field exists and can add a link by editing the item"
+      - "Add empty-state placeholder text for missing artifactUrl within Phase 1 item cards: when item.artifactUrl is empty/undefined, render an inline hint 'No artifact link' styled with italic text-gray-400 inside the Phase 1 item card's link row, placed after the conversation link or its placeholder"
+      - "Verify that the Phase 1 empty state ('No prompt blocks yet. Add your first one.') remains visible and functional when not in the addingPrompt state, and that the 'Add Prompt Block' button remains visible when items exist — these already work correctly in the current code"
+      - "Verify that all empty state text uses consistent styling: italic text-gray-400 for field-level empty states within the detail page, text-gray-500 for section-level empty messages (like the Phase 1 'No prompt blocks yet' message which uses text-gray-500 to match its longer descriptive text)"
+      - "Verify npm run typecheck passes with no type errors in the updated component"
+      - "Verify npm test passes (existing tests unchanged; no new tests needed for this visual polish story)"
   - id: "E7-S3"
     title: "Add React Error Boundary and ErrorLogger"
     status: "Draft"

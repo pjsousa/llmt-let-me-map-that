@@ -309,7 +309,7 @@ stories:
       - "Verify npm test passes (existing tests unchanged; no new tests needed for this UI component)"
   - id: "E7-S1"
     title: "Implement Progressive Disclosure on Detail Page"
-    status: "Draft"
+    status: "review"
     epic_file: "docs/epics/epic-7.md"
     plan:
       - "Note: The Phase 2 section JSX is already present in project-detail-page.tsx (delivered in E6-S1) — no prerequisite addition needed"

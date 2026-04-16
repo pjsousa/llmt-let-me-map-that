@@ -1,10 +1,42 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getProject, updateProject, getPhase1Items, createPhase1Item, updatePhase1Item, deletePhase1Item } from "@/data";
 import type { Project, Phase1Item } from "@/data";
 import { useFeedbackContext } from "@/feedback";
 import { validateProjectName, validatePromptText, validateUrl } from "@/validation";
 import { RESEARCH_SPACE_URL } from "@/constants";
+
+type SectionId = "name" | "originalPrompt" | "kickoffThreadUrl" | "phase1" | "phase2";
+
+function isSectionFilled(sectionId: SectionId, project: Project, items: Phase1Item[]): boolean {
+  switch (sectionId) {
+    case "name":
+      return true;
+    case "originalPrompt":
+      return !!project.originalPrompt;
+    case "kickoffThreadUrl":
+      return !!project.kickoffThreadUrl;
+    case "phase1":
+      return items.length > 0;
+    case "phase2":
+      return !!project.phase2Prompt;
+  }
+}
+
+function getFirstUnfilledSection(project: Project, items: Phase1Item[]): SectionId | null {
+  const sections: SectionId[] = ["name", "originalPrompt", "kickoffThreadUrl", "phase1", "phase2"];
+  for (const section of sections) {
+    if (!isSectionFilled(section, project, items)) {
+      return section;
+    }
+  }
+  return null;
+}
+
+function truncate(text: string, maxLength: number): string {
+  if (text.length <= maxLength) return text;
+  return text.slice(0, maxLength) + "…";
+}
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -53,6 +85,8 @@ export default function ProjectDetailPage() {
   const [phase2Draft, setPhase2Draft] = useState("");
   const [phase2ValidationError, setPhase2ValidationError] = useState("");
   const phase2TextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const [expandedSection, setExpandedSection] = useState<SectionId | null>(null);
 
   useEffect(() => {
     if (id === undefined) {
@@ -115,10 +149,31 @@ export default function ProjectDetailPage() {
     };
   }, [project, addError]);
 
+  const effectiveExpandedSection: SectionId = useMemo(() => {
+    if (editingName) return "name";
+    if (editingPrompt) return "originalPrompt";
+    if (editingUrl) return "kickoffThreadUrl";
+    if (addingPrompt || editingItemId || deletingItemId) return "phase1";
+    if (editingPhase2) return "phase2";
+    if (expandedSection !== null) return expandedSection;
+    if (project) {
+      const first = getFirstUnfilledSection(project, items);
+      if (first !== null) return first;
+    }
+    return "phase2";
+  }, [editingName, editingPrompt, editingUrl, addingPrompt, editingItemId, deletingItemId, editingPhase2, expandedSection, project, items]);
+
+  const autoExpandedSection = useMemo(() => {
+    if (expandedSection !== null) return null;
+    if (!project) return null;
+    return getFirstUnfilledSection(project, items);
+  }, [expandedSection, project, items]);
+
   const handleStartEditName = () => {
     setNameDraft(project!.name);
     setEditingName(true);
     setNameValidationError("");
+    setExpandedSection("name");
   };
 
   const handleSaveName = async () => {
@@ -132,6 +187,7 @@ export default function ProjectDetailPage() {
     if (result.success) {
       setProject(result.data);
       setEditingName(false);
+      setExpandedSection(null);
       addSuccess("Project name updated");
     } else {
       addError(result.error);
@@ -142,12 +198,14 @@ export default function ProjectDetailPage() {
     setEditingName(false);
     setNameValidationError("");
     setNameDraft("");
+    setExpandedSection(null);
   };
 
   const handleStartEditPrompt = () => {
     setPromptDraft(project!.originalPrompt ?? "");
     setEditingPrompt(true);
     setPromptValidationError("");
+    setExpandedSection("originalPrompt");
   };
 
   const handleSavePrompt = async () => {
@@ -163,6 +221,7 @@ export default function ProjectDetailPage() {
     if (result.success) {
       setProject(result.data);
       setEditingPrompt(false);
+      setExpandedSection(null);
       addSuccess("Original prompt saved");
     } else {
       addError(result.error);
@@ -173,12 +232,14 @@ export default function ProjectDetailPage() {
     setEditingPrompt(false);
     setPromptValidationError("");
     setPromptDraft("");
+    setExpandedSection(null);
   };
 
   const handleStartEditUrl = () => {
     setUrlDraft(project!.kickoffThreadUrl ?? "");
     setEditingUrl(true);
     setUrlValidationError("");
+    setExpandedSection("kickoffThreadUrl");
   };
 
   const handleSaveUrl = async () => {
@@ -194,6 +255,7 @@ export default function ProjectDetailPage() {
     if (result.success) {
       setProject(result.data);
       setEditingUrl(false);
+      setExpandedSection(null);
       addSuccess("Kickoff thread URL saved");
     } else {
       addError(result.error);
@@ -204,12 +266,14 @@ export default function ProjectDetailPage() {
     setEditingUrl(false);
     setUrlValidationError("");
     setUrlDraft("");
+    setExpandedSection(null);
   };
 
   const handleStartAddPrompt = () => {
     setAddingPrompt(true);
     setNewPromptText("");
     setNewPromptValidationError("");
+    setExpandedSection("phase1");
   };
 
   const handleSaveNewPrompt = async () => {
@@ -226,6 +290,7 @@ export default function ProjectDetailPage() {
       setAddingPrompt(false);
       setNewPromptText("");
       setNewPromptValidationError("");
+      setExpandedSection(null);
     } else {
       addError(result.error);
     }
@@ -235,6 +300,7 @@ export default function ProjectDetailPage() {
     setAddingPrompt(false);
     setNewPromptText("");
     setNewPromptValidationError("");
+    setExpandedSection(null);
   };
 
   const handleStartEditItem = (item: Phase1Item) => {
@@ -245,6 +311,7 @@ export default function ProjectDetailPage() {
     setEditPromptValidationError("");
     setEditConversationUrlValidationError("");
     setEditArtifactUrlValidationError("");
+    setExpandedSection("phase1");
   };
 
   const handleSaveEditItem = async () => {
@@ -286,6 +353,7 @@ export default function ProjectDetailPage() {
       setEditPromptValidationError("");
       setEditConversationUrlValidationError("");
       setEditArtifactUrlValidationError("");
+      setExpandedSection(null);
     } else {
       addError(result.error);
     }
@@ -299,10 +367,12 @@ export default function ProjectDetailPage() {
     setEditPromptValidationError("");
     setEditConversationUrlValidationError("");
     setEditArtifactUrlValidationError("");
+    setExpandedSection(null);
   };
 
   const handleStartDelete = (item: Phase1Item) => {
     setDeletingItemId(item.id);
+    setExpandedSection("phase1");
   };
 
   const handleConfirmDelete = async () => {
@@ -311,6 +381,7 @@ export default function ProjectDetailPage() {
       addSuccess("Prompt block deleted");
       await refreshItems();
       setDeletingItemId(null);
+      setExpandedSection(null);
     } else {
       addError(result.error);
     }
@@ -318,12 +389,14 @@ export default function ProjectDetailPage() {
 
   const handleCancelDelete = () => {
     setDeletingItemId(null);
+    setExpandedSection(null);
   };
 
   const handleStartEditPhase2 = () => {
     setPhase2Draft(project!.phase2Prompt ?? "");
     setEditingPhase2(true);
     setPhase2ValidationError("");
+    setExpandedSection("phase2");
   };
 
   const handleSavePhase2 = async () => {
@@ -339,6 +412,7 @@ export default function ProjectDetailPage() {
     if (result.success) {
       setProject(result.data);
       setEditingPhase2(false);
+      setExpandedSection(null);
       addSuccess("Phase 2 prompt saved");
     } else {
       addError(result.error);
@@ -349,6 +423,7 @@ export default function ProjectDetailPage() {
     setEditingPhase2(false);
     setPhase2ValidationError("");
     setPhase2Draft("");
+    setExpandedSection(null);
   };
 
   useEffect(() => {
@@ -403,106 +478,175 @@ export default function ProjectDetailPage() {
         &larr; Back to projects
       </a>
 
-      {editingName ? (
-        <div className="mt-4">
-          <input
-            ref={nameInputRef}
-            type="text"
-            value={nameDraft}
-            onChange={(e) => {
-              setNameDraft(e.target.value);
-              setNameValidationError("");
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleSaveName();
-              if (e.key === "Escape") handleCancelEditName();
-            }}
-            className="border border-gray-300 rounded px-3 py-2 text-gray-900 text-2xl font-semibold w-full"
-          />
-          {nameValidationError && (
-            <p className="mt-1 text-sm text-red-600">{nameValidationError}</p>
-          )}
-          <div className="mt-2 flex gap-2">
-            <button
-              onClick={handleSaveName}
-              className="bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800"
-            >
-              Save
-            </button>
-            <button
-              onClick={handleCancelEditName}
-              className="border border-gray-300 rounded px-4 py-2 hover:bg-gray-50"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      ) : (
-        <h2 className="mt-4 text-2xl font-semibold text-gray-900">
-          {project.name}
-          <button
-            onClick={handleStartEditName}
-            className="ml-3 text-sm text-blue-600 hover:underline font-normal"
-          >
-            Edit
-          </button>
-        </h2>
-      )}
-
-      <section className="mt-6">
-        <h3 className="text-lg font-medium text-gray-900">Original Prompt</h3>
-        {editingPrompt ? (
-          <div className="mt-2">
-            <textarea
-              ref={promptTextareaRef}
-              rows={6}
-              value={promptDraft}
-              onChange={(e) => {
-                setPromptDraft(e.target.value);
-                setPromptValidationError("");
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Escape") handleCancelEditPrompt();
-              }}
-              className="border border-gray-300 rounded px-3 py-2 w-full text-gray-900"
-            />
-            {promptValidationError && (
-              <p className="mt-1 text-sm text-red-600">{promptValidationError}</p>
+      {/* Name section */}
+      {effectiveExpandedSection === "name" ? (
+        <section className="mt-4 border-l-4 border-blue-500 pl-4">
+          <h2 className="text-2xl font-semibold text-gray-900">
+            Project Name
+            {autoExpandedSection === "name" && (
+              <span className="ml-2 text-xs font-normal text-blue-500">Next step</span>
             )}
-            <div className="mt-2 flex gap-2">
+          </h2>
+          {editingName ? (
+            <div className="mt-2">
+              <input
+                ref={nameInputRef}
+                type="text"
+                value={nameDraft}
+                onChange={(e) => {
+                  setNameDraft(e.target.value);
+                  setNameValidationError("");
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSaveName();
+                  if (e.key === "Escape") handleCancelEditName();
+                }}
+                className="border border-gray-300 rounded px-3 py-2 text-gray-900 text-2xl font-semibold w-full"
+              />
+              {nameValidationError && (
+                <p className="mt-1 text-sm text-red-600">{nameValidationError}</p>
+              )}
+              <div className="mt-2 flex gap-2">
+                <button
+                  onClick={handleSaveName}
+                  className="bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={handleCancelEditName}
+                  className="border border-gray-300 rounded px-4 py-2 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-2">
+              <p className="text-xl font-semibold text-gray-900">{project.name}</p>
               <button
-                onClick={handleSavePrompt}
-                className="bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800"
+                onClick={handleStartEditName}
+                className="mt-1 text-sm text-blue-600 hover:underline"
               >
-                Save
-              </button>
-              <button
-                onClick={handleCancelEditPrompt}
-                className="border border-gray-300 rounded px-4 py-2 hover:bg-gray-50"
-              >
-                Cancel
+                Edit
               </button>
             </div>
-          </div>
-        ) : (
-          <div className="mt-2">
-            {project.originalPrompt ? (
-              <div className="whitespace-pre-wrap text-gray-700">
-                {project.originalPrompt}
-              </div>
-            ) : (
-              <p className="italic text-gray-400">Add your deep-research prompt.</p>
-            )}
+          )}
+        </section>
+      ) : (
+        <section className="mt-4">
+          <h2 className="text-2xl font-semibold text-gray-900">
+            {project.name}
             <button
-              onClick={handleStartEditPrompt}
-              className="mt-1 text-sm text-blue-600 hover:underline"
+              onClick={handleStartEditName}
+              className="ml-3 text-sm text-blue-600 hover:underline font-normal"
             >
               Edit
             </button>
-          </div>
-        )}
-      </section>
+          </h2>
+        </section>
+      )}
 
+      {/* Original Prompt section */}
+      {effectiveExpandedSection === "originalPrompt" ? (
+        <section className="mt-6 border-l-4 border-blue-500 pl-4">
+          <h3 className="text-lg font-medium text-gray-900">
+            Original Prompt
+            {autoExpandedSection === "originalPrompt" && (
+              <span className="ml-2 text-xs font-normal text-blue-500">Next step</span>
+            )}
+          </h3>
+          {editingPrompt ? (
+            <div className="mt-2">
+              <textarea
+                ref={promptTextareaRef}
+                rows={6}
+                value={promptDraft}
+                onChange={(e) => {
+                  setPromptDraft(e.target.value);
+                  setPromptValidationError("");
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") handleCancelEditPrompt();
+                }}
+                className="border border-gray-300 rounded px-3 py-2 w-full text-gray-900"
+              />
+              {promptValidationError && (
+                <p className="mt-1 text-sm text-red-600">{promptValidationError}</p>
+              )}
+              <div className="mt-2 flex gap-2">
+                <button
+                  onClick={handleSavePrompt}
+                  className="bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={handleCancelEditPrompt}
+                  className="border border-gray-300 rounded px-4 py-2 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-2">
+              {project.originalPrompt ? (
+                <>
+                  <div className="whitespace-pre-wrap text-gray-700">
+                    {project.originalPrompt}
+                  </div>
+                  <button
+                    onClick={handleStartEditPrompt}
+                    className="mt-1 text-sm text-blue-600 hover:underline"
+                  >
+                    Edit
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className="italic text-gray-400">Add your deep-research prompt.</p>
+                  <button
+                    onClick={handleStartEditPrompt}
+                    className="mt-1 text-sm text-blue-600 hover:underline"
+                  >
+                    Edit
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </section>
+      ) : (
+        <section className="mt-6">
+          <h3 className="text-lg font-medium text-gray-900">Original Prompt</h3>
+          <div className="mt-1">
+            {project.originalPrompt ? (
+              <div className="flex items-start gap-2">
+                <p className="text-sm text-gray-600">{truncate(project.originalPrompt, 80)}</p>
+                <button
+                  onClick={() => setExpandedSection("originalPrompt")}
+                  className="text-sm text-blue-600 hover:underline whitespace-nowrap"
+                >
+                  Expand
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-start gap-2">
+                <p className="italic text-gray-400">Add your deep-research prompt.</p>
+                <button
+                  onClick={handleStartEditPrompt}
+                  className="text-sm text-blue-600 hover:underline whitespace-nowrap"
+                >
+                  Edit
+                </button>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Research Space section — always visible, not affected by progressive disclosure */}
       <section className="mt-6">
         <h3 className="text-lg font-medium text-gray-900">Research Space</h3>
         <a
@@ -515,359 +659,498 @@ export default function ProjectDetailPage() {
         </a>
       </section>
 
-      <section className="mt-6">
-        <h3 className="text-lg font-medium text-gray-900">Kickoff Thread</h3>
-        {editingUrl ? (
-          <div className="mt-2">
-            <input
-              ref={urlInputRef}
-              type="text"
-              value={urlDraft}
-              onChange={(e) => {
-                setUrlDraft(e.target.value);
-                setUrlValidationError("");
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleSaveUrl();
-                if (e.key === "Escape") handleCancelEditUrl();
-              }}
-              className="border border-gray-300 rounded px-3 py-2 w-full text-gray-900"
-            />
-            {urlValidationError && (
-              <p className="mt-1 text-sm text-red-600">{urlValidationError}</p>
+      {/* Kickoff Thread section */}
+      {effectiveExpandedSection === "kickoffThreadUrl" ? (
+        <section className="mt-6 border-l-4 border-blue-500 pl-4">
+          <h3 className="text-lg font-medium text-gray-900">
+            Kickoff Thread
+            {autoExpandedSection === "kickoffThreadUrl" && (
+              <span className="ml-2 text-xs font-normal text-blue-500">Next step</span>
             )}
-            <div className="mt-2 flex gap-2">
+          </h3>
+          {editingUrl ? (
+            <div className="mt-2">
+              <input
+                ref={urlInputRef}
+                type="text"
+                value={urlDraft}
+                onChange={(e) => {
+                  setUrlDraft(e.target.value);
+                  setUrlValidationError("");
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSaveUrl();
+                  if (e.key === "Escape") handleCancelEditUrl();
+                }}
+                className="border border-gray-300 rounded px-3 py-2 w-full text-gray-900"
+              />
+              {urlValidationError && (
+                <p className="mt-1 text-sm text-red-600">{urlValidationError}</p>
+              )}
+              <div className="mt-2 flex gap-2">
+                <button
+                  onClick={handleSaveUrl}
+                  className="bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={handleCancelEditUrl}
+                  className="border border-gray-300 rounded px-4 py-2 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-2">
+              {project.kickoffThreadUrl ? (
+                <>
+                  <a
+                    href={project.kickoffThreadUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    {project.kickoffThreadUrl}
+                  </a>
+                  <div className="mt-1">
+                    <button
+                      onClick={handleStartEditUrl}
+                      className="text-sm text-blue-600 hover:underline"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="italic text-gray-400">Paste your kickoff thread URL.</p>
+                  <button
+                    onClick={handleStartEditUrl}
+                    className="mt-1 text-sm text-blue-600 hover:underline"
+                  >
+                    Edit
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </section>
+      ) : (
+        <section className="mt-6">
+          <h3 className="text-lg font-medium text-gray-900">Kickoff Thread</h3>
+          <div className="mt-1">
+            {project.kickoffThreadUrl ? (
+              <div className="flex items-start gap-2">
+                <a
+                  href={project.kickoffThreadUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-blue-600 hover:underline"
+                >
+                  {project.kickoffThreadUrl}
+                </a>
+                <button
+                  onClick={() => setExpandedSection("kickoffThreadUrl")}
+                  className="text-sm text-blue-600 hover:underline"
+                >
+                  Expand
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-start gap-2">
+                <p className="italic text-gray-400">Paste your kickoff thread URL.</p>
+                <button
+                  onClick={handleStartEditUrl}
+                  className="text-sm text-blue-600 hover:underline"
+                >
+                  Edit
+                </button>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Phase 1 Prompts section */}
+      {effectiveExpandedSection === "phase1" ? (
+        <section className="mt-6 border-l-4 border-blue-500 pl-4">
+          <h3 className="text-lg font-medium text-gray-900">
+            Phase 1 Prompts
+            {autoExpandedSection === "phase1" && (
+              <span className="ml-2 text-xs font-normal text-blue-500">Next step</span>
+            )}
+          </h3>
+
+          {itemsLoading ? (
+            <p className="mt-2 text-center text-gray-500">Loading…</p>
+          ) : itemsError ? (
+            <div className="mt-2">
+              <p className="text-gray-700">Failed to load prompt blocks.</p>
               <button
-                onClick={handleSaveUrl}
-                className="bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800"
+                onClick={() => {
+                  setItemsLoading(true);
+                  setItemsError(false);
+                  refreshItems();
+                }}
+                className="mt-1 text-sm text-blue-600 hover:underline"
               >
-                Save
-              </button>
-              <button
-                onClick={handleCancelEditUrl}
-                className="border border-gray-300 rounded px-4 py-2 hover:bg-gray-50"
-              >
-                Cancel
+                Retry
               </button>
             </div>
-          </div>
-        ) : (
-          <div className="mt-2">
-            {project.kickoffThreadUrl ? (
-              <a
-                href={project.kickoffThreadUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+          ) : items.length === 0 && !addingPrompt ? (
+            <p className="mt-2 text-gray-500">
+              No prompt blocks yet.{" "}
+              <button
+                onClick={handleStartAddPrompt}
                 className="text-blue-600 hover:underline"
               >
-                {project.kickoffThreadUrl}
-              </a>
-            ) : (
-              <p className="italic text-gray-400">
-                Paste your kickoff thread URL.
-              </p>
-            )}
-            <button
-              onClick={handleStartEditUrl}
-              className="mt-1 text-sm text-blue-600 hover:underline"
-            >
-              Edit
-            </button>
-          </div>
-        )}
-      </section>
-
-      <section className="mt-6">
-        <h3 className="text-lg font-medium text-gray-900">Phase 1 Prompts</h3>
-
-        {itemsLoading ? (
-          <p className="mt-2 text-center text-gray-500">Loading…</p>
-        ) : itemsError ? (
-          <div className="mt-2">
-            <p className="text-gray-700">Failed to load prompt blocks.</p>
-            <button
-              onClick={() => {
-                setItemsLoading(true);
-                setItemsError(false);
-                refreshItems();
-              }}
-              className="mt-1 text-sm text-blue-600 hover:underline"
-            >
-              Retry
-            </button>
-          </div>
-        ) : items.length === 0 && !addingPrompt ? (
-          <p className="mt-2 text-gray-500">
-            No prompt blocks yet.{" "}
-            <button
-              onClick={handleStartAddPrompt}
-              className="text-blue-600 hover:underline"
-            >
-              Add your first one.
-            </button>
-          </p>
-        ) : (
-          <div className="mt-2">
-            {items.map((item) => (
-              <div
-                key={item.id}
-                className="mt-4 rounded border border-gray-200 bg-white p-4"
-              >
-                {editingItemId === item.id ? (
-                  <>
-                    <span className="font-semibold text-gray-900">
-                      Prompt {item.sequenceNumber}
-                    </span>
-                    <textarea
-                      ref={editItemPromptRef}
-                      rows={6}
-                      value={editPromptDraft}
-                      onChange={(e) => {
-                        setEditPromptDraft(e.target.value);
-                        setEditPromptValidationError("");
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Escape") handleCancelEditItem();
-                      }}
-                      className="mt-2 border border-gray-300 rounded px-3 py-2 w-full text-gray-900"
-                    />
-                    {editPromptValidationError && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {editPromptValidationError}
-                      </p>
-                    )}
-                    <label className="mt-3 block text-sm font-medium text-gray-700">
-                      Conversation URL
-                    </label>
-                    <input
-                      type="text"
-                      value={editConversationUrlDraft}
-                      onChange={(e) => {
-                        setEditConversationUrlDraft(e.target.value);
-                        setEditConversationUrlValidationError("");
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleSaveEditItem();
-                        if (e.key === "Escape") handleCancelEditItem();
-                      }}
-                      className="mt-1 border border-gray-300 rounded px-3 py-2 w-full text-gray-900"
-                    />
-                    {editConversationUrlValidationError && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {editConversationUrlValidationError}
-                      </p>
-                    )}
-                    <label className="mt-3 block text-sm font-medium text-gray-700">
-                      Artifact URL
-                    </label>
-                    <input
-                      type="text"
-                      value={editArtifactUrlDraft}
-                      onChange={(e) => {
-                        setEditArtifactUrlDraft(e.target.value);
-                        setEditArtifactUrlValidationError("");
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleSaveEditItem();
-                        if (e.key === "Escape") handleCancelEditItem();
-                      }}
-                      className="mt-1 border border-gray-300 rounded px-3 py-2 w-full text-gray-900"
-                    />
-                    {editArtifactUrlValidationError && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {editArtifactUrlValidationError}
-                      </p>
-                    )}
-                    <div className="mt-3 flex gap-2">
-                      <button
-                        onClick={handleSaveEditItem}
-                        className="bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={handleCancelEditItem}
-                        className="border border-gray-300 rounded px-4 py-2 hover:bg-gray-50"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </>
-                ) : deletingItemId === item.id ? (
-                  <div>
-                    <p className="text-gray-900">
-                      Delete Prompt {item.sequenceNumber}? Its number will be
-                      permanently retired.
-                    </p>
-                    <div className="mt-2 flex gap-2">
-                      <button
-                        onClick={handleConfirmDelete}
-                        className="bg-red-600 text-white rounded px-4 py-2 hover:bg-red-500"
-                      >
-                        Delete
-                      </button>
-                      <button
-                        onClick={handleCancelDelete}
-                        className="border border-gray-300 rounded px-4 py-2 hover:bg-gray-50"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex items-baseline justify-between">
+                Add your first one.
+              </button>
+            </p>
+          ) : (
+            <div className="mt-2">
+              {items.map((item) => (
+                <div
+                  key={item.id}
+                  className="mt-4 rounded border border-gray-200 bg-white p-4"
+                >
+                  {editingItemId === item.id ? (
+                    <>
                       <span className="font-semibold text-gray-900">
                         Prompt {item.sequenceNumber}
                       </span>
-                      <div className="flex gap-3">
+                      <textarea
+                        ref={editItemPromptRef}
+                        rows={6}
+                        value={editPromptDraft}
+                        onChange={(e) => {
+                          setEditPromptDraft(e.target.value);
+                          setEditPromptValidationError("");
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Escape") handleCancelEditItem();
+                        }}
+                        className="mt-2 border border-gray-300 rounded px-3 py-2 w-full text-gray-900"
+                      />
+                      {editPromptValidationError && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {editPromptValidationError}
+                        </p>
+                      )}
+                      <label className="mt-3 block text-sm font-medium text-gray-700">
+                        Conversation URL
+                      </label>
+                      <input
+                        type="text"
+                        value={editConversationUrlDraft}
+                        onChange={(e) => {
+                          setEditConversationUrlDraft(e.target.value);
+                          setEditConversationUrlValidationError("");
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleSaveEditItem();
+                          if (e.key === "Escape") handleCancelEditItem();
+                        }}
+                        className="mt-1 border border-gray-300 rounded px-3 py-2 w-full text-gray-900"
+                      />
+                      {editConversationUrlValidationError && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {editConversationUrlValidationError}
+                        </p>
+                      )}
+                      <label className="mt-3 block text-sm font-medium text-gray-700">
+                        Artifact URL
+                      </label>
+                      <input
+                        type="text"
+                        value={editArtifactUrlDraft}
+                        onChange={(e) => {
+                          setEditArtifactUrlDraft(e.target.value);
+                          setEditArtifactUrlValidationError("");
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleSaveEditItem();
+                          if (e.key === "Escape") handleCancelEditItem();
+                        }}
+                        className="mt-1 border border-gray-300 rounded px-3 py-2 w-full text-gray-900"
+                      />
+                      {editArtifactUrlValidationError && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {editArtifactUrlValidationError}
+                        </p>
+                      )}
+                      <div className="mt-3 flex gap-2">
                         <button
-                          onClick={() => handleStartEditItem(item)}
-                          className="text-sm text-blue-600 hover:underline"
+                          onClick={handleSaveEditItem}
+                          className="bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800"
                         >
-                          Edit
+                          Save
                         </button>
                         <button
-                          onClick={() => handleStartDelete(item)}
-                          className="text-sm text-red-600 hover:underline"
+                          onClick={handleCancelEditItem}
+                          className="border border-gray-300 rounded px-4 py-2 hover:bg-gray-50"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </>
+                  ) : deletingItemId === item.id ? (
+                    <div>
+                      <p className="text-gray-900">
+                        Delete Prompt {item.sequenceNumber}? Its number will be
+                        permanently retired.
+                      </p>
+                      <div className="mt-2 flex gap-2">
+                        <button
+                          onClick={handleConfirmDelete}
+                          className="bg-red-600 text-white rounded px-4 py-2 hover:bg-red-500"
                         >
                           Delete
                         </button>
+                        <button
+                          onClick={handleCancelDelete}
+                          className="border border-gray-300 rounded px-4 py-2 hover:bg-gray-50"
+                        >
+                          Cancel
+                        </button>
                       </div>
                     </div>
-                    <div className="whitespace-pre-wrap text-gray-700">
-                      {item.promptText}
-                    </div>
-                    <div className="mt-2 flex gap-4">
-                      {item.conversationUrl && (
-                        <a
-                          href={item.conversationUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline"
-                        >
-                          Conversation
-                        </a>
-                      )}
-                      {item.artifactUrl && (
-                        <a
-                          href={item.artifactUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline"
-                        >
-                          Artifact
-                        </a>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-            ))}
-            {items.length > 0 && (
-              <button
-                onClick={handleStartAddPrompt}
-                className="mt-4 text-sm text-blue-600 hover:underline"
-              >
-                Add Prompt Block
-              </button>
-            )}
-          </div>
-        )}
-
-        {addingPrompt && (
-          <div className="mt-4">
-            <textarea
-              ref={newPromptTextareaRef}
-              rows={6}
-              value={newPromptText}
-              onChange={(e) => {
-                setNewPromptText(e.target.value);
-                setNewPromptValidationError("");
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Escape") handleCancelAddPrompt();
-              }}
-              className="border border-gray-300 rounded px-3 py-2 w-full text-gray-900"
-            />
-            {newPromptValidationError && (
-              <p className="mt-1 text-sm text-red-600">
-                {newPromptValidationError}
-              </p>
-            )}
-            <div className="mt-2 flex gap-2">
-              <button
-                onClick={handleSaveNewPrompt}
-                className="bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800"
-              >
-                Save
-              </button>
-              <button
-                onClick={handleCancelAddPrompt}
-                className="border border-gray-300 rounded px-4 py-2 hover:bg-gray-50"
-              >
-                Cancel
-              </button>
+                  ) : (
+                    <>
+                      <div className="flex items-baseline justify-between">
+                        <span className="font-semibold text-gray-900">
+                          Prompt {item.sequenceNumber}
+                        </span>
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => handleStartEditItem(item)}
+                            className="text-sm text-blue-600 hover:underline"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleStartDelete(item)}
+                            className="text-sm text-red-600 hover:underline"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                      <div className="whitespace-pre-wrap text-gray-700">
+                        {item.promptText}
+                      </div>
+                      <div className="mt-2 flex gap-4">
+                        {item.conversationUrl && (
+                          <a
+                            href={item.conversationUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:underline"
+                          >
+                            Conversation
+                          </a>
+                        )}
+                        {item.artifactUrl && (
+                          <a
+                            href={item.artifactUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:underline"
+                          >
+                            Artifact
+                          </a>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+              {items.length > 0 && (
+                <button
+                  onClick={handleStartAddPrompt}
+                  className="mt-4 text-sm text-blue-600 hover:underline"
+                >
+                  Add Prompt Block
+                </button>
+              )}
             </div>
+          )}
+
+          {addingPrompt && (
+            <div className="mt-4">
+              <textarea
+                ref={newPromptTextareaRef}
+                rows={6}
+                value={newPromptText}
+                onChange={(e) => {
+                  setNewPromptText(e.target.value);
+                  setNewPromptValidationError("");
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") handleCancelAddPrompt();
+                }}
+                className="border border-gray-300 rounded px-3 py-2 w-full text-gray-900"
+              />
+              {newPromptValidationError && (
+                <p className="mt-1 text-sm text-red-600">
+                  {newPromptValidationError}
+                </p>
+              )}
+              <div className="mt-2 flex gap-2">
+                <button
+                  onClick={handleSaveNewPrompt}
+                  className="bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={handleCancelAddPrompt}
+                  className="border border-gray-300 rounded px-4 py-2 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </section>
+      ) : (
+        <section className="mt-6">
+          <h3 className="text-lg font-medium text-gray-900">Phase 1 Prompts</h3>
+          <div className="mt-1">
+            {!itemsLoading && items.length > 0 ? (
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-gray-500">
+                  {items.length} prompt block{items.length !== 1 ? "s" : ""}
+                </p>
+                <button
+                  onClick={() => setExpandedSection("phase1")}
+                  className="text-sm text-blue-600 hover:underline"
+                >
+                  Expand
+                </button>
+              </div>
+            ) : !itemsLoading && items.length === 0 ? (
+              <div className="flex items-start gap-2">
+                <p className="text-sm text-gray-500">No prompt blocks yet.</p>
+                <button
+                  onClick={() => {
+                    setExpandedSection("phase1");
+                    handleStartAddPrompt();
+                  }}
+                  className="text-sm text-blue-600 hover:underline"
+                >
+                  Add
+                </button>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">Loading…</p>
+            )}
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
       <div className="my-8 border-t border-gray-200" />
 
-      <section>
-        <h3 className="text-lg font-medium text-gray-900">Phase 2 Prompt</h3>
-        {editingPhase2 ? (
-          <div className="mt-2">
-            <textarea
-              ref={phase2TextareaRef}
-              rows={6}
-              value={phase2Draft}
-              onChange={(e) => {
-                setPhase2Draft(e.target.value);
-                setPhase2ValidationError("");
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Escape") handleCancelEditPhase2();
-              }}
-              className="border border-gray-300 rounded px-3 py-2 w-full text-gray-900"
-            />
-            {phase2ValidationError && (
-              <p className="mt-1 text-sm text-red-600">{phase2ValidationError}</p>
+      {/* Phase 2 Prompt section */}
+      {effectiveExpandedSection === "phase2" ? (
+        <section className="border-l-4 border-blue-500 pl-4">
+          <h3 className="text-lg font-medium text-gray-900">
+            Phase 2 Prompt
+            {autoExpandedSection === "phase2" && (
+              <span className="ml-2 text-xs font-normal text-blue-500">Next step</span>
             )}
-            <div className="mt-2 flex gap-2">
-              <button
-                onClick={handleSavePhase2}
-                className="bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800"
-              >
-                Save
-              </button>
-              <button
-                onClick={handleCancelEditPhase2}
-                className="border border-gray-300 rounded px-4 py-2 hover:bg-gray-50"
-              >
-                Cancel
-              </button>
+          </h3>
+          {editingPhase2 ? (
+            <div className="mt-2">
+              <textarea
+                ref={phase2TextareaRef}
+                rows={6}
+                value={phase2Draft}
+                onChange={(e) => {
+                  setPhase2Draft(e.target.value);
+                  setPhase2ValidationError("");
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") handleCancelEditPhase2();
+                }}
+                className="border border-gray-300 rounded px-3 py-2 w-full text-gray-900"
+              />
+              {phase2ValidationError && (
+                <p className="mt-1 text-sm text-red-600">{phase2ValidationError}</p>
+              )}
+              <div className="mt-2 flex gap-2">
+                <button
+                  onClick={handleSavePhase2}
+                  className="bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={handleCancelEditPhase2}
+                  className="border border-gray-300 rounded px-4 py-2 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="mt-2">
+          ) : (
+            <div className="mt-2">
+              {project.phase2Prompt ? (
+                <>
+                  <div className="whitespace-pre-wrap text-gray-700">
+                    {project.phase2Prompt}
+                  </div>
+                  <button
+                    onClick={handleStartEditPhase2}
+                    className="mt-1 text-sm text-blue-600 hover:underline"
+                  >
+                    Edit
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className="italic text-gray-400">Add your Phase 2 prompt.</p>
+                  <button
+                    onClick={handleStartEditPhase2}
+                    className="mt-1 text-sm text-blue-600 hover:underline"
+                  >
+                    Edit
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </section>
+      ) : (
+        <section>
+          <h3 className="text-lg font-medium text-gray-900">Phase 2 Prompt</h3>
+          <div className="mt-1">
             {project.phase2Prompt ? (
-              <div className="whitespace-pre-wrap text-gray-700">
-                {project.phase2Prompt}
+              <div className="flex items-start gap-2">
+                <p className="text-sm text-gray-600">{truncate(project.phase2Prompt, 80)}</p>
+                <button
+                  onClick={() => setExpandedSection("phase2")}
+                  className="text-sm text-blue-600 hover:underline whitespace-nowrap"
+                >
+                  Expand
+                </button>
               </div>
             ) : (
-              <p className="italic text-gray-400">Add your Phase 2 prompt.</p>
+              <div className="flex items-start gap-2">
+                <p className="italic text-gray-400">Add your Phase 2 prompt.</p>
+                <button
+                  onClick={handleStartEditPhase2}
+                  className="text-sm text-blue-600 hover:underline whitespace-nowrap"
+                >
+                  Edit
+                </button>
+              </div>
             )}
-            <button
-              onClick={handleStartEditPhase2}
-              className="mt-1 text-sm text-blue-600 hover:underline"
-            >
-              Edit
-            </button>
           </div>
-        )}
-      </section>
+        </section>
+      )}
     </div>
   );
 }

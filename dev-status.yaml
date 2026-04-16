@@ -30,7 +30,15 @@ stories:
     title: "Implement Phase 1 Item CRUD with Sequence Logic"
     status: "Draft"
     epic_file: "docs/epics/epic-1.md"
-    plan: []
+    plan:
+      - "Create src/data/phase1-repository.ts following the same pattern as project-repository.ts (openDatabase → error check → try/catch → Result<T>)"
+      - "Implement createPhase1Item(projectId, promptText): query ALL phase1Items for the project (including deleted) via the projectId index, compute nextSeqNum = max(sequenceNumber) + 1 (or 1 if none), generate UUID, set timestamps, deleted=false, empty conversationUrl/artifactUrl, write to phase1Items store, return Result<Phase1Item>"
+      - "Implement getPhase1Items(projectId): read all items via projectId index, filter out deleted===true, sort by sequenceNumber ascending, return Result<Phase1Item[]>"
+      - "Implement updatePhase1Item(id, fields): read existing item by key, return error if not found, strip any attempt to change sequenceNumber or projectId from the fields partial, merge remaining fields, set updatedAt to new ISO string, write back, return Result<Phase1Item>"
+      - "Implement deletePhase1Item(id): read existing item by key, return error if not found, set deleted=true and update updatedAt, write back, return Result<void>"
+      - "Add a helper getAllPhase1ItemsForSeq(projectId, db) that retrieves ALL items (including deleted) for sequence number computation — used internally by createPhase1Item only"
+      - "Export all four public functions and update src/data/index.ts barrel exports"
+      - "Verify no changes to database.ts schema — phase1Items store with projectId index already exists from E1-S1"
   - id: "E1-S4"
     title: "Unit Test Sequence Integrity Scenarios"
     status: "Draft"

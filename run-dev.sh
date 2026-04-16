@@ -10,7 +10,10 @@ N=15         # runs per cycle
 X=10         # minutes to sleep after each full cycle
 Y=5          # minutes to sleep after a failed run
 Z=3          # max consecutive failures before exit
+
 VERBOSE=1
+
+START_TS=$(date +%s)
 
 usage() {
   cat <<EOF
@@ -27,22 +30,35 @@ Options:
   -z, --max-errors Z        Exit after Z consecutive failures (default: $Z)
   -q, --quiet               Reduce log output
   -h, --help                Show this help message and exit
-
-Examples:
-  $SCRIPT_NAME
-  $SCRIPT_NAME -n 5 -x 60
-  $SCRIPT_NAME --runs 2 --sleep-minutes 15 --error-sleep 3 --max-errors 4
 EOF
+}
+
+elapsed_time() {
+  local now elapsed h m s
+  now=$(date +%s)
+  elapsed=$((now - START_TS))
+  h=$((elapsed / 3600))
+  m=$(((elapsed % 3600) / 60))
+  s=$((elapsed % 60))
+  printf '%02d:%02d:%02d' "$h" "$m" "$s"
 }
 
 log() {
   if [[ "$VERBOSE" -eq 1 ]]; then
-    printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"
+    printf '[%s] [elapsed=%s] [cycle=%s] %s\n' \
+      "$(date '+%Y-%m-%d %H:%M:%S')" \
+      "$(elapsed_time)" \
+      "${cycle:-0}" \
+      "$*"
   fi
 }
 
 err() {
-  printf '[%s] ERROR: %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" >&2
+  printf '[%s] [elapsed=%s] [cycle=%s] ERROR: %s\n' \
+    "$(date '+%Y-%m-%d %H:%M:%S')" \
+    "$(elapsed_time)" \
+    "${cycle:-0}" \
+    "$*" >&2
 }
 
 die() {
@@ -87,7 +103,6 @@ run_block() {
   return 0
 }
 
-# Argument parsing
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -n|--runs)
@@ -124,7 +139,6 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Validation
 is_positive_int "$N" || die "N/--runs must be a positive integer."
 is_non_negative_int "$X" || die "X/--sleep-minutes must be a non-negative integer."
 is_non_negative_int "$Y" || die "Y/--error-sleep must be a non-negative integer."
@@ -138,10 +152,10 @@ cycle=1
 log "Starting runner with: N=$N, X=${X}m, Y=${Y}m, Z=$Z, verbose=$VERBOSE"
 
 while true; do
-  log "Starting cycle #$cycle"
+  log "Starting cycle"
 
   for (( run=1; run<=N; run++ )); do
-    log "Run $run/$N in cycle #$cycle"
+    log "Run $run/$N"
 
     if run_block; then
       consecutive_errors=0
@@ -165,8 +179,7 @@ while true; do
     fi
   done
 
-  log "Cycle #$cycle completed. Sleeping for $X minute(s) before the next cycle."
+  log "Cycle completed. Total cycles since beginning: $cycle. Sleeping for $X minute(s) before next cycle."
   ((cycle++))
   sleep "${X}m"
 done
-

@@ -15,7 +15,7 @@ stories:
       - "Verify database opens with correct stores and indexes (manual check or smoke script; unit tests covered in E1-S4)"
   - id: "E1-S2"
     title: "Implement Project CRUD in ProjectRepository"
-    status: "Draft"
+    status: "review"
     epic_file: "docs/epics/epic-1.md"
     plan:
       - "Import and reuse the database connection opened by the E1-S1 initialization module (do not open a second connection)"

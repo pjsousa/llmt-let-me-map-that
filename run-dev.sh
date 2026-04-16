@@ -1,12 +1,172 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-echo "🟠 planning"
-opencode run --model opencode-go/glm-5.1 "@prompts/plan.prompt.md"
-echo "🟡 introspect"
-opencode run --model opencode-go/glm-5.1 "@prompts/plan-validate.prompt.md"
-echo "🟢 dev"
-opencode run --model opencode-go/glm-5.1 "@prompts/dev.prompt.md"
+set -u
+set -o pipefail
 
-echo "🚀 pushing to remote"
-git push origin
+SCRIPT_NAME="$(basename "$0")"
+
+# Defaults
+N=15         # runs per cycle
+X=10         # minutes to sleep after each full cycle
+Y=5          # minutes to sleep after a failed run
+Z=3          # max consecutive failures before exit
+VERBOSE=1
+
+usage() {
+  cat <<EOF
+Usage: $SCRIPT_NAME [options]
+
+Runs a block of commands N times, then sleeps X minutes, and repeats forever.
+If a run fails, the script sleeps Y minutes, increments the consecutive error
+counter, and exits after Z consecutive failures.
+
+Options:
+  -n, --runs N              Number of runs per cycle (default: $N)
+  -x, --sleep-minutes X     Minutes to sleep after each cycle (default: $X)
+  -y, --error-sleep Y       Minutes to sleep after a failed run (default: $Y)
+  -z, --max-errors Z        Exit after Z consecutive failures (default: $Z)
+  -q, --quiet               Reduce log output
+  -h, --help                Show this help message and exit
+
+Examples:
+  $SCRIPT_NAME
+  $SCRIPT_NAME -n 5 -x 60
+  $SCRIPT_NAME --runs 2 --sleep-minutes 15 --error-sleep 3 --max-errors 4
+EOF
+}
+
+log() {
+  if [[ "$VERBOSE" -eq 1 ]]; then
+    printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"
+  fi
+}
+
+err() {
+  printf '[%s] ERROR: %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" >&2
+}
+
+die() {
+  err "$*"
+  exit 1
+}
+
+require_value() {
+  local opt="$1"
+  local val="${2-}"
+  [[ -n "$val" ]] || die "Option '$opt' requires a value. Use --help for usage."
+}
+
+is_non_negative_int() {
+  [[ "$1" =~ ^[0-9]+$ ]]
+}
+
+is_positive_int() {
+  [[ "$1" =~ ^[1-9][0-9]*$ ]]
+}
+
+run_step() {
+  local label="$1"
+  shift
+  log "$label"
+  "$@"
+}
+
+run_block() {
+  run_step "🟠 planning" \
+    opencode run --model opencode-go/glm-5.1 "@prompts/plan.prompt.md" || return $?
+
+  run_step "🟡 introspect" \
+    opencode run --model opencode-go/glm-5.1 "@prompts/plan-validate.prompt.md" || return $?
+
+  run_step "🟢 dev" \
+    opencode run --model opencode-go/glm-5.1 "@prompts/dev.prompt.md" || return $?
+
+  run_step "🚀 pushing to remote" \
+    git push origin || return $?
+
+  return 0
+}
+
+# Argument parsing
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -n|--runs)
+      require_value "$1" "${2-}"
+      N="$2"
+      shift 2
+      ;;
+    -x|--sleep-minutes)
+      require_value "$1" "${2-}"
+      X="$2"
+      shift 2
+      ;;
+    -y|--error-sleep)
+      require_value "$1" "${2-}"
+      Y="$2"
+      shift 2
+      ;;
+    -z|--max-errors)
+      require_value "$1" "${2-}"
+      Z="$2"
+      shift 2
+      ;;
+    -q|--quiet)
+      VERBOSE=0
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      die "Unknown option: $1. Use --help for usage."
+      ;;
+  esac
+done
+
+# Validation
+is_positive_int "$N" || die "N/--runs must be a positive integer."
+is_non_negative_int "$X" || die "X/--sleep-minutes must be a non-negative integer."
+is_non_negative_int "$Y" || die "Y/--error-sleep must be a non-negative integer."
+is_positive_int "$Z" || die "Z/--max-errors must be a positive integer."
+
+trap 'err "Interrupted. Exiting."; exit 130' INT TERM
+
+consecutive_errors=0
+cycle=1
+
+log "Starting runner with: N=$N, X=${X}m, Y=${Y}m, Z=$Z, verbose=$VERBOSE"
+
+while true; do
+  log "Starting cycle #$cycle"
+
+  for (( run=1; run<=N; run++ )); do
+    log "Run $run/$N in cycle #$cycle"
+
+    if run_block; then
+      consecutive_errors=0
+      log "Run $run/$N succeeded. Consecutive error count reset to 0."
+    else
+      exit_code=$?
+      ((consecutive_errors++))
+      err "Run $run/$N failed with exit code $exit_code. Consecutive errors: $consecutive_errors/$Z."
+
+      if (( consecutive_errors >= Z )); then
+        err "Reached $Z consecutive failures. Exiting."
+        exit "$exit_code"
+      fi
+
+      if (( Y > 0 )); then
+        log "Sleeping for $Y minute(s) after failure."
+        sleep "${Y}m"
+      else
+        log "Failure backoff is 0 minute(s); continuing immediately."
+      fi
+    fi
+  done
+
+  log "Cycle #$cycle completed. Sleeping for $X minute(s) before the next cycle."
+  ((cycle++))
+  sleep "${X}m"
+done
 

@@ -2,11 +2,6 @@ project: Phaseboard
 last_updated: 2026-04-16
 
 stories:
-  - id: "1.1"
-    title: "Bootstrap app and health slice"
-    status: "review"
-    epic_file: "docs/prd/epic-1-foundation-and-search.md"
-    plan: []
   - id: "E1-S1"
     title: "Initialize IndexedDB Schema"
     status: "review"

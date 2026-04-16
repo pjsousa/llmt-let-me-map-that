@@ -189,7 +189,7 @@ stories:
       - "Verify npm test passes (existing tests unchanged; no new tests needed for this UI component)"
   - id: "E4-S4"
     title: "Inline Edit for Kickoff Thread URL"
-    status: "Draft"
+    status: "review"
     epic_file: "docs/epics/epic-4.md"
     plan:
       - "Add local UI state variables to ProjectDetailPage for the kickoff thread URL inline-edit pattern: editingUrl (boolean, initial false), urlDraft (string), urlValidationError (string, initial empty string)"

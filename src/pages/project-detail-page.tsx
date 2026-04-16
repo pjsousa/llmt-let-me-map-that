@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getProject, updateProject } from "@/data";
 import type { Project } from "@/data";
 import { useFeedbackContext } from "@/feedback";
-import { validateProjectName, validatePromptText } from "@/validation";
+import { validateProjectName, validatePromptText, validateUrl } from "@/validation";
 import { RESEARCH_SPACE_URL } from "@/constants";
 
 export default function ProjectDetailPage() {
@@ -23,6 +23,11 @@ export default function ProjectDetailPage() {
   const [promptDraft, setPromptDraft] = useState("");
   const [promptValidationError, setPromptValidationError] = useState("");
   const promptTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const [editingUrl, setEditingUrl] = useState(false);
+  const [urlDraft, setUrlDraft] = useState("");
+  const [urlValidationError, setUrlValidationError] = useState("");
+  const urlInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (id === undefined) {
@@ -111,6 +116,37 @@ export default function ProjectDetailPage() {
     setPromptDraft("");
   };
 
+  const handleStartEditUrl = () => {
+    setUrlDraft(project!.kickoffThreadUrl ?? "");
+    setEditingUrl(true);
+    setUrlValidationError("");
+  };
+
+  const handleSaveUrl = async () => {
+    const trimmed = urlDraft.trim();
+    const validation = validateUrl(trimmed);
+    if (!validation.valid) {
+      setUrlValidationError(validation.errors[0].message);
+      return;
+    }
+    const result = await updateProject(project!.id, {
+      kickoffThreadUrl: trimmed,
+    });
+    if (result.success) {
+      setProject(result.data);
+      setEditingUrl(false);
+      addSuccess("Kickoff thread URL saved");
+    } else {
+      addError(result.error);
+    }
+  };
+
+  const handleCancelEditUrl = () => {
+    setEditingUrl(false);
+    setUrlValidationError("");
+    setUrlDraft("");
+  };
+
   useEffect(() => {
     if (editingName && nameInputRef.current) {
       nameInputRef.current.focus();
@@ -122,6 +158,12 @@ export default function ProjectDetailPage() {
       promptTextareaRef.current.focus();
     }
   }, [editingPrompt]);
+
+  useEffect(() => {
+    if (editingUrl && urlInputRef.current) {
+      urlInputRef.current.focus();
+    }
+  }, [editingUrl]);
 
   if (loading) {
     return (
@@ -253,19 +295,63 @@ export default function ProjectDetailPage() {
 
       <section className="mt-6">
         <h3 className="text-lg font-medium text-gray-900">Kickoff Thread</h3>
-        {project.kickoffThreadUrl ? (
-          <a
-            href={project.kickoffThreadUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-2 inline-block text-blue-600 hover:underline"
-          >
-            {project.kickoffThreadUrl}
-          </a>
+        {editingUrl ? (
+          <div className="mt-2">
+            <input
+              ref={urlInputRef}
+              type="text"
+              value={urlDraft}
+              onChange={(e) => {
+                setUrlDraft(e.target.value);
+                setUrlValidationError("");
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSaveUrl();
+                if (e.key === "Escape") handleCancelEditUrl();
+              }}
+              className="border border-gray-300 rounded px-3 py-2 w-full text-gray-900"
+            />
+            {urlValidationError && (
+              <p className="mt-1 text-sm text-red-600">{urlValidationError}</p>
+            )}
+            <div className="mt-2 flex gap-2">
+              <button
+                onClick={handleSaveUrl}
+                className="bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800"
+              >
+                Save
+              </button>
+              <button
+                onClick={handleCancelEditUrl}
+                className="border border-gray-300 rounded px-4 py-2 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         ) : (
-          <p className="mt-2 italic text-gray-400">
-            No kickoff thread URL yet.
-          </p>
+          <div className="mt-2">
+            {project.kickoffThreadUrl ? (
+              <a
+                href={project.kickoffThreadUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
+                {project.kickoffThreadUrl}
+              </a>
+            ) : (
+              <p className="italic text-gray-400">
+                Paste your kickoff thread URL.
+              </p>
+            )}
+            <button
+              onClick={handleStartEditUrl}
+              className="mt-1 text-sm text-blue-600 hover:underline"
+            >
+              Edit
+            </button>
+          </div>
         )}
       </section>
     </div>

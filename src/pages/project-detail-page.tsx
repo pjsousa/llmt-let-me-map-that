@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getProject, updateProject } from "@/data";
-import type { Project } from "@/data";
+import { getProject, updateProject, getPhase1Items } from "@/data";
+import type { Project, Phase1Item } from "@/data";
 import { useFeedbackContext } from "@/feedback";
 import { validateProjectName, validatePromptText, validateUrl } from "@/validation";
 import { RESEARCH_SPACE_URL } from "@/constants";
@@ -29,6 +29,10 @@ export default function ProjectDetailPage() {
   const [urlValidationError, setUrlValidationError] = useState("");
   const urlInputRef = useRef<HTMLInputElement>(null);
 
+  const [items, setItems] = useState<Phase1Item[]>([]);
+  const [itemsLoading, setItemsLoading] = useState(true);
+  const [itemsError, setItemsError] = useState(false);
+
   useEffect(() => {
     if (id === undefined) {
       navigate("/", { replace: true });
@@ -55,6 +59,40 @@ export default function ProjectDetailPage() {
       cancelled = true;
     };
   }, [id, navigate, addError]);
+
+  const refreshItems = useCallback(async () => {
+    if (!project) return;
+    const result = await getPhase1Items(project.id);
+    if (result.success) {
+      setItems(result.data);
+    } else {
+      addError(result.error);
+    }
+  }, [project, addError]);
+
+  useEffect(() => {
+    if (!project) return;
+
+    let cancelled = false;
+
+    (async () => {
+      const result = await getPhase1Items(project.id);
+      if (cancelled) return;
+
+      if (result.success) {
+        setItems(result.data);
+        setItemsLoading(false);
+      } else {
+        setItemsLoading(false);
+        setItemsError(true);
+        addError(result.error);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [project, addError]);
 
   const handleStartEditName = () => {
     setNameDraft(project!.name);
@@ -351,6 +389,70 @@ export default function ProjectDetailPage() {
             >
               Edit
             </button>
+          </div>
+        )}
+      </section>
+
+      <section className="mt-6">
+        <h3 className="text-lg font-medium text-gray-900">Phase 1 Prompts</h3>
+
+        {itemsLoading ? (
+          <p className="mt-2 text-center text-gray-500">Loading…</p>
+        ) : itemsError ? (
+          <div className="mt-2">
+            <p className="text-gray-700">Failed to load prompt blocks.</p>
+            <button
+              onClick={() => {
+                setItemsLoading(true);
+                setItemsError(false);
+                refreshItems();
+              }}
+              className="mt-1 text-sm text-blue-600 hover:underline"
+            >
+              Retry
+            </button>
+          </div>
+        ) : items.length === 0 ? (
+          <p className="mt-2 text-gray-500">
+            No prompt blocks yet. Add your first one.
+          </p>
+        ) : (
+          <div className="mt-2">
+            {items.map((item) => (
+              <div
+                key={item.id}
+                className="mt-4 rounded border border-gray-200 bg-white p-4"
+              >
+                <span className="font-semibold text-gray-900">
+                  Prompt {item.sequenceNumber}
+                </span>
+                <div className="whitespace-pre-wrap text-gray-700">
+                  {item.promptText}
+                </div>
+                <div className="mt-2 flex gap-4">
+                  {item.conversationUrl && (
+                    <a
+                      href={item.conversationUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      Conversation
+                    </a>
+                  )}
+                  {item.artifactUrl && (
+                    <a
+                      href={item.artifactUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      Artifact
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </section>

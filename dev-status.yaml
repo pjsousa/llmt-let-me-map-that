@@ -205,7 +205,7 @@ stories:
       - "Verify npm test passes (existing tests unchanged; no new tests needed for this UI component)"
   - id: "E5-S1"
     title: "Display Phase 1 Item List"
-    status: "Draft"
+    status: "review"
     epic_file: "docs/epics/epic-5.md"
     plan:
       - "Add Phase1Item to the imports from @/data in project-detail-page.tsx (Phase1Item type already exported from @/data)"

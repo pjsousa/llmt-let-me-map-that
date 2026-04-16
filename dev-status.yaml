@@ -1,4 +1,4 @@
-project: YouTube Caption Search
+project: Phaseboard
 last_updated: 2026-04-16
 
 stories:
@@ -9,7 +9,7 @@ stories:
     plan: []
   - id: "E1-S1"
     title: "Initialize IndexedDB Schema"
-    status: "Draft"
+    status: "review"
     epic_file: "docs/epics/epic-1.md"
     plan:
       - "Initialize minimal TypeScript project (package.json, tsconfig.json) — just enough to author and type-check the data layer; full Vite+React+Tailwind scaffolding is E3-S1"

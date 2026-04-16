@@ -12,3 +12,8 @@
 ## 2026-04-16 — E3-S2 plan
 
 - **BrowserRouter vs HashRouter:** E3-S2 uses BrowserRouter for clean URL paths (/project/:id). This works natively on Vercel and Netlify with SPA fallback. If the app is deployed to GitHub Pages, a _redirects or custom 404.html fallback will be needed to serve index.html for all routes. This is acceptable tech debt for MVP; if GitHub Pages becomes the deployment target, the router can be switched to HashRouter or a fallback page can be added.
+
+## 2026-04-16 — Introspection: E4-S1 plan refinement
+
+- **Contradictory error handling in original plan:** The original plan had three conflicting steps: (3) set `notFound` state on missing/invalid ID and on getProject failure, (6) render a not-found state page with a "Back to projects" link, and (11) redirect to `/` with an error toast. The acceptance criteria requires "Invalid project ID redirects to list with error message," which is best satisfied by redirecting, not showing a not-found page. Refinement: removed `notFound` state variable, removed not-found UI step, and consolidated error handling into the useEffect with `navigate('/', { replace: true })` for both missing ID and getProject failure. Using `replace: true` prevents the back button from returning to an invalid URL.
+- **RESEARCH_SPACE_URL placement:** The original plan was ambiguous about placing the constant at "module top or in a shared constants file." Refinement: specified `src/constants.ts` as the location for maintainability and reusability across future stories that may reference the research Space URL.

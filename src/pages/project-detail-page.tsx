@@ -320,6 +320,37 @@ export default function ProjectDetailPage() {
     setDeletingItemId(null);
   };
 
+  const handleStartEditPhase2 = () => {
+    setPhase2Draft(project!.phase2Prompt ?? "");
+    setEditingPhase2(true);
+    setPhase2ValidationError("");
+  };
+
+  const handleSavePhase2 = async () => {
+    const trimmed = phase2Draft.trim();
+    const validation = validatePromptText(trimmed);
+    if (!validation.valid) {
+      setPhase2ValidationError(validation.errors[0].message);
+      return;
+    }
+    const result = await updateProject(project!.id, {
+      phase2Prompt: trimmed,
+    });
+    if (result.success) {
+      setProject(result.data);
+      setEditingPhase2(false);
+      addSuccess("Phase 2 prompt saved");
+    } else {
+      addError(result.error);
+    }
+  };
+
+  const handleCancelEditPhase2 = () => {
+    setEditingPhase2(false);
+    setPhase2ValidationError("");
+    setPhase2Draft("");
+  };
+
   useEffect(() => {
     if (editingName && nameInputRef.current) {
       nameInputRef.current.focus();
@@ -349,6 +380,12 @@ export default function ProjectDetailPage() {
       editItemPromptRef.current.focus();
     }
   }, [editingItemId]);
+
+  useEffect(() => {
+    if (editingPhase2 && phase2TextareaRef.current) {
+      phase2TextareaRef.current.focus();
+    }
+  }, [editingPhase2]);
 
   if (loading) {
     return (
@@ -772,6 +809,62 @@ export default function ProjectDetailPage() {
                 Cancel
               </button>
             </div>
+          </div>
+        )}
+      </section>
+
+      <div className="my-8 border-t border-gray-200" />
+
+      <section>
+        <h3 className="text-lg font-medium text-gray-900">Phase 2 Prompt</h3>
+        {editingPhase2 ? (
+          <div className="mt-2">
+            <textarea
+              ref={phase2TextareaRef}
+              rows={6}
+              value={phase2Draft}
+              onChange={(e) => {
+                setPhase2Draft(e.target.value);
+                setPhase2ValidationError("");
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Escape") handleCancelEditPhase2();
+              }}
+              className="border border-gray-300 rounded px-3 py-2 w-full text-gray-900"
+            />
+            {phase2ValidationError && (
+              <p className="mt-1 text-sm text-red-600">{phase2ValidationError}</p>
+            )}
+            <div className="mt-2 flex gap-2">
+              <button
+                onClick={handleSavePhase2}
+                className="bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800"
+              >
+                Save
+              </button>
+              <button
+                onClick={handleCancelEditPhase2}
+                className="border border-gray-300 rounded px-4 py-2 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="mt-2">
+            {project.phase2Prompt ? (
+              <div className="whitespace-pre-wrap text-gray-700">
+                {project.phase2Prompt}
+              </div>
+            ) : (
+              <p className="italic text-gray-400">Add your Phase 2 prompt.</p>
+            )}
+            <button
+              onClick={handleStartEditPhase2}
+              className="mt-1 text-sm text-blue-600 hover:underline"
+            >
+              Edit
+            </button>
           </div>
         )}
       </section>

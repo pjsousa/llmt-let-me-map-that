@@ -291,7 +291,7 @@ stories:
       - "Note: E1-S4 already covers unit-level sequence integrity tests (empty project, consecutive adds, delete-gap, all-deleted then add, cross-project isolation, reload persistence, update immutability). This story verifies those same invariants hold through the full UI stack (React components → repository → IndexedDB → page reload)."
   - id: "E6-S1"
     title: "Display and Edit Phase 2 Prompt"
-    status: "Draft"
+    status: "review"
     epic_file: "docs/epics/epic-6.md"
     plan:
       - "SKIP — state variables editingPhase2, phase2Draft, phase2ValidationError and useRef phase2TextareaRef already exist in project-detail-page.tsx (lines 52-55); no additions needed"

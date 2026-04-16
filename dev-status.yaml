@@ -347,7 +347,17 @@ stories:
     title: "Add React Error Boundary and ErrorLogger"
     status: "Draft"
     epic_file: "docs/epics/epic-7.md"
-    plan: []
+    plan:
+      - "Create src/error/error-logger.ts — export a logError(message: string, error?: unknown) function that calls console.error with a descriptive prefix (e.g., '[Phaseboard]') plus the message and error; this is the single entry point for all application error logging per architecture §7.8 and §12"
+      - "Add console.error logging to all repository error paths: in src/data/project-repository.ts, call logError in every catch block before returning the error Result (createProject, getProject, getAllProjects, updateProject) with a descriptive message like 'Failed to create project'; do the same in src/data/phase1-repository.ts (createPhase1Item, getPhase1Items, updatePhase1Item, deletePhase1Item) and src/data/database.ts (openDatabase); also log in the db open failure path before returning the error"
+      - "Create src/error/error-boundary.tsx — a React class component extending React.Component that implements React.ErrorBoundary: state tracks hasError boolean; componentDidCatch logs the error via logError from error-logger.ts; render returns children when no error, or a recovery UI div with 'Something went wrong. Try refreshing the page.' (styled with text-center py-12 text-gray-700) plus a 'Refresh page' button (styled with mt-4 bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800) that calls window.location.reload() when hasError is true"
+      - "Update src/App.tsx — import ErrorBoundary from @/error and wrap the existing BrowserRouter + content in <ErrorBoundary> so that any unhandled exception in the component tree is caught at the root level"
+      - "Create src/error/__tests__/error-logger.test.ts — unit test logError: mock console.error, call logError with a message and error object, verify console.error was called with the expected formatted output ([Phaseboard] prefix + message); call logError with a message only (no error), verify console.error was called with just the message; call logError with a message and a string error, verify it handles non-Error objects"
+      - "Create src/error/__tests__/error-boundary.test.tsx — render ErrorBoundary with a child component that throws in render, verify the recovery UI ('Something went wrong. Try refreshing the page.') is rendered; render ErrorBoundary with a child component that does not throw, verify the child renders normally; use vi.spyOn(console, 'error') to suppress React's own error-boundary console noise in tests"
+      - "Create src/error/index.ts barrel export — re-export ErrorBoundary component from error-boundary.tsx and logError from error-logger.ts"
+      - "Run npm run typecheck to verify no type errors"
+      - "Run npm test to verify all existing tests plus new tests pass"
+      - "Note: The optional IndexedDB error persistence store (architecture §7.8 'Optionally, write errors to an IndexedDB errors table') is deferred as a future enhancement; E7-S3 delivers console.error logging only, which satisfies the PRD requirement for 'basic application error logging' (§7.8, §12)"
   - id: "E7-S4"
     title: "Mobile Responsive Layout Pass"
     status: "Draft"

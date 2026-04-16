@@ -176,7 +176,17 @@ stories:
     title: "Inline Edit for Original Deep-Research Prompt"
     status: "Draft"
     epic_file: "docs/epics/epic-4.md"
-    plan: []
+    plan:
+      - "Add local UI state variables to ProjectDetailPage for the original prompt inline-edit pattern: editingPrompt (boolean, initial false), promptDraft (string), promptValidationError (string, initial empty string)"
+      - "Add handleStartEditPrompt function: set promptDraft to project.originalPrompt (or empty string if undefined), set editingPrompt to true, clear promptValidationError"
+      - "Add handleSavePrompt async function: trim promptDraft, call validatePromptText(trimmed) — if invalid, set promptValidationError to the first error message and return; if valid, call updateProject(project.id, { originalPrompt: trimmed }), on success update local project state with the returned project, set editingPrompt to false, call addSuccess('Original prompt saved'), on failure call addError with the error message"
+      - "Add handleCancelEditPrompt function: set editingPrompt to false, clear promptValidationError, reset promptDraft"
+      - "Render an 'Original Prompt' section in ProjectDetailPage below the project name section with two-mode rendering: display mode shows the prompt text with whitespace-pre-wrap styling (or empty-state text 'Add your deep-research prompt.' styled with text-gray-400 italic if originalPrompt is empty) with an 'Edit' button (text-blue-600 text-sm hover:underline); edit mode shows a textarea (rows=6, auto-focused) pre-filled with promptDraft styled consistently (border border-gray-300 rounded px-3 py-2), an inline validation error message below the textarea (conditionally rendered when promptValidationError is non-empty, text-red-600 text-sm), a 'Save' button (bg-gray-900 text-white rounded px-4 py-2 hover:bg-gray-800), and a 'Cancel' button (border border-gray-300 rounded px-4 py-2 hover:bg-gray-50)"
+      - "Clear promptValidationError in the textarea's onChange handler whenever the user types (set promptDraft to the textarea value and set promptValidationError to empty string)"
+      - "Handle Escape key in the textarea to call handleCancelEditPrompt; Enter key inserts a newline (default textarea behavior, no special handler needed)"
+      - "Import validatePromptText from @/validation in ProjectDetailPage"
+      - "Verify npm run typecheck passes with no type errors in the updated component"
+      - "Verify npm test passes (existing tests unchanged; no new tests needed for this UI component)"
   - id: "E4-S4"
     title: "Inline Edit for Kickoff Thread URL"
     status: "Draft"

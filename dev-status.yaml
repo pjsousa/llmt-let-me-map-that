@@ -18,11 +18,12 @@ stories:
     status: "Draft"
     epic_file: "docs/epics/epic-1.md"
     plan:
+      - "Import and reuse the database connection opened by the E1-S1 initialization module (do not open a second connection)"
       - "Define Project TypeScript type/interface mirroring the data model (id, name, originalPrompt, kickoffThreadUrl, phase2Prompt, createdAt, updatedAt)"
       - "Implement createProject(name) — generate UUID via crypto.randomUUID(), set createdAt/updatedAt to ISO strings, initialize optional fields as empty strings, write to IndexedDB projects store, return Result<Project>"
       - "Implement getProject(id) — read from projects store by key, return Result<Project> with error string if not found"
       - "Implement getAllProjects() — read all projects from store, sort by updatedAt descending, return Result<Project[]>"
-      - "Implement updateProject(id, fields) — read existing project, merge partial fields (reject attempts to change id), set updatedAt to new ISO string, write back, return Result<Project>"
+      - "Implement updateProject(id, fields) — read existing project, merge partial fields (reject or strip attempts to change id or createdAt), set updatedAt to new ISO string, write back, return Result<Project>"
       - "Ensure all four methods return Result<T> — no thrown exceptions; all IndexedDB errors caught and returned as error results"
       - "Verify methods work against the IndexedDB schema established in E1-S1 (projects store with keyPath: id)"
   - id: "E1-S3"

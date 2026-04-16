@@ -260,7 +260,17 @@ stories:
     title: "Soft-Delete Phase 1 Item"
     status: "Draft"
     epic_file: "docs/epics/epic-5.md"
-    plan: []
+    plan:
+      - "Add deletePhase1Item to the data imports from @/data in project-detail-page.tsx (already exported alongside getPhase1Items, createPhase1Item, updatePhase1Item)"
+      - "Add state variable deletingItemId (string | null, initial null) to track which item is pending confirmation for deletion"
+      - "Add handleStartDelete(item: Phase1Item) function: set deletingItemId to item.id — this shows the confirmation dialog for that item"
+      - "Add handleConfirmDelete async function: call deletePhase1Item(deletingItemId!), on success call addSuccess('Prompt block deleted'), call refreshItems() to reload the list, set deletingItemId to null; on failure call addError with the error message"
+      - "Add handleCancelDelete function: set deletingItemId to null — dismisses the confirmation dialog without deleting"
+      - "Add a 'Delete' button to each Phase 1 item's display mode (next to the existing 'Edit' button in the flex row at project-detail-page.tsx:639-644), styled with text-red-600 text-sm hover:underline, that calls handleStartDelete(item)"
+      - "Render a confirmation dialog inline within the item card when deletingItemId === item.id: replace the item's display content with a confirmation message 'Delete Prompt {item.sequenceNumber}? Its number will be permanently retired.' styled with text-gray-900, and two buttons — 'Delete' (bg-red-600 text-white rounded px-4 py-2 hover:bg-red-500) calling handleConfirmDelete, and 'Cancel' (border border-gray-300 rounded px-4 py-2 hover:bg-gray-50) calling handleCancelDelete"
+      - "Ensure the confirmation dialog does not show if the item is currently in edit mode (editingItemId !== null for that item); only show delete confirmation in display mode"
+      - "Verify npm run typecheck passes with no type errors in the updated component"
+      - "Verify npm test passes (existing tests unchanged; no new tests needed for this UI component)"
   - id: "E5-S5"
     title: "Phase 1 Sequence Integrity End-to-End Verification"
     status: "Draft"

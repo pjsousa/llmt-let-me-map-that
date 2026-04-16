@@ -64,7 +64,7 @@ stories:
       - "Run npm test and verify all scenarios pass; run npm run typecheck and verify no type errors"
   - id: "E2-S1"
     title: "Implement ValidationService"
-    status: "Draft"
+    status: "review"
     epic_file: "docs/epics/epic-2.md"
     plan:
       - "Create src/validation/types.ts — define ValidationResult type: { valid: boolean; errors: { field: string; message: string }[] }"

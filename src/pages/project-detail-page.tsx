@@ -942,7 +942,7 @@ export default function ProjectDetailPage() {
                         {item.promptText}
                       </div>
                       <div className="mt-2 flex gap-4">
-                        {item.conversationUrl && (
+                        {item.conversationUrl ? (
                           <a
                             href={item.conversationUrl}
                             target="_blank"
@@ -951,8 +951,10 @@ export default function ProjectDetailPage() {
                           >
                             Conversation
                           </a>
+                        ) : (
+                          <span className="italic text-gray-400">No conversation link</span>
                         )}
-                        {item.artifactUrl && (
+                        {item.artifactUrl ? (
                           <a
                             href={item.artifactUrl}
                             target="_blank"
@@ -961,6 +963,8 @@ export default function ProjectDetailPage() {
                           >
                             Artifact
                           </a>
+                        ) : (
+                          <span className="italic text-gray-400">No artifact link</span>
                         )}
                       </div>
                     </>

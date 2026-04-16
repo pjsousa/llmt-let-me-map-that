@@ -332,7 +332,7 @@ stories:
       - "Verify existing tests still pass: npm test"
   - id: "E7-S2"
     title: "Add Empty States for All Sections"
-    status: "Draft"
+    status: "review"
     epic_file: "docs/epics/epic-7.md"
     plan:
       - "Audit existing empty states against architecture specifications and prior story plans — the following section-level empty states already exist in project-detail-page.tsx and match architecture specs: Original Prompt ('Add your deep-research prompt.' — italic text-gray-400 with Edit button), Kickoff Thread ('Paste your kickoff thread URL.' — italic text-gray-400 with Edit button), Phase 1 Prompts ('No prompt blocks yet. Add your first one.' — text-gray-500 with clickable Add link), Phase 2 Prompt ('Add your Phase 2 prompt.' — italic text-gray-400 with Edit button). Project name is always filled from creation and does not need an empty state. Research Space is a read-only constant and does not need an empty state. Project list page empty state ('No projects yet. Create your first one.') already exists. No changes needed to these section-level empty states."

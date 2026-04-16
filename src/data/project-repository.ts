@@ -1,6 +1,7 @@
 import { openDatabase } from "./database";
 import { Result } from "./result";
 import { Project } from "./types";
+import { logError } from "@/error/error-logger";
 
 export async function createProject(name: string): Promise<Result<Project>> {
   const dbResult = await openDatabase();
@@ -21,13 +22,12 @@ export async function createProject(name: string): Promise<Result<Project>> {
     await dbResult.data.put("projects", project);
     return { success: true, data: project };
   } catch (err) {
-    return {
-      success: false,
-      error:
-        err instanceof Error
-          ? err.message
-          : "Unknown error creating project",
-    };
+    const error =
+      err instanceof Error
+        ? err.message
+        : "Unknown error creating project";
+    logError("Failed to create project", err);
+    return { success: false, error };
   }
 }
 
@@ -42,13 +42,12 @@ export async function getProject(id: string): Promise<Result<Project>> {
     }
     return { success: true, data: project as Project };
   } catch (err) {
-    return {
-      success: false,
-      error:
-        err instanceof Error
-          ? err.message
-          : "Unknown error reading project",
-    };
+    const error =
+      err instanceof Error
+        ? err.message
+        : "Unknown error reading project";
+    logError("Failed to read project", err);
+    return { success: false, error };
   }
 }
 
@@ -64,13 +63,12 @@ export async function getAllProjects(): Promise<Result<Project[]>> {
     );
     return { success: true, data: sorted };
   } catch (err) {
-    return {
-      success: false,
-      error:
-        err instanceof Error
-          ? err.message
-          : "Unknown error reading projects",
-    };
+    const error =
+      err instanceof Error
+        ? err.message
+        : "Unknown error reading projects";
+    logError("Failed to read all projects", err);
+    return { success: false, error };
   }
 }
 
@@ -98,12 +96,11 @@ export async function updateProject(
     await dbResult.data.put("projects", updated);
     return { success: true, data: updated };
   } catch (err) {
-    return {
-      success: false,
-      error:
-        err instanceof Error
-          ? err.message
-          : "Unknown error updating project",
-    };
+    const error =
+      err instanceof Error
+        ? err.message
+        : "Unknown error updating project";
+    logError("Failed to update project", err);
+    return { success: false, error };
   }
 }

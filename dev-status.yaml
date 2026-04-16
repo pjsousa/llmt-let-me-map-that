@@ -344,7 +344,7 @@ stories:
       - "Verify npm test passes (existing tests unchanged; no new tests needed for this visual polish story)"
   - id: "E7-S3"
     title: "Add React Error Boundary and ErrorLogger"
-    status: "Draft"
+    status: "review"
     epic_file: "docs/epics/epic-7.md"
     plan:
       - "Install React testing dependencies: npm install -D @testing-library/react @testing-library/jest-dom jsdom; these are needed to unit-test the ErrorBoundary React component — existing tests are pure-function tests that don't need a DOM, but ErrorBoundary requires rendering React components in a jsdom environment"

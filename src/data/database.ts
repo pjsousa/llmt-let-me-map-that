@@ -1,5 +1,6 @@
 import { openDB, IDBPDatabase } from "idb";
 import { Result } from "./result";
+import { logError } from "@/error/error-logger";
 
 const DB_NAME = "phaseboard";
 const DB_VERSION = 1;
@@ -35,6 +36,7 @@ export function openDatabase(): Promise<Result<PhaseboardDB>> {
           err instanceof Error
             ? err.message
             : "Unknown error opening phaseboard database";
+        logError("Failed to open database", err);
         return { success: false as const, error: message };
       }
     })();

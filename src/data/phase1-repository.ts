@@ -1,6 +1,7 @@
 import { openDatabase, PhaseboardDB } from "./database";
 import { Result } from "./result";
 import { Phase1Item } from "./types";
+import { logError } from "@/error/error-logger";
 
 async function getAllPhase1ItemsForSeq(
   projectId: string,
@@ -42,13 +43,12 @@ export async function createPhase1Item(
     await dbResult.data.put("phase1Items", item);
     return { success: true, data: item };
   } catch (err) {
-    return {
-      success: false,
-      error:
-        err instanceof Error
-          ? err.message
-          : "Unknown error creating phase1 item",
-    };
+    const error =
+      err instanceof Error
+        ? err.message
+        : "Unknown error creating phase1 item";
+    logError("Failed to create phase1 item", err);
+    return { success: false, error };
   }
 }
 
@@ -69,13 +69,12 @@ export async function getPhase1Items(
       .sort((a, b) => a.sequenceNumber - b.sequenceNumber);
     return { success: true, data: items };
   } catch (err) {
-    return {
-      success: false,
-      error:
-        err instanceof Error
-          ? err.message
-          : "Unknown error reading phase1 items",
-    };
+    const error =
+      err instanceof Error
+        ? err.message
+        : "Unknown error reading phase1 items";
+    logError("Failed to read phase1 items", err);
+    return { success: false, error };
   }
 }
 
@@ -106,13 +105,12 @@ export async function updatePhase1Item(
     await dbResult.data.put("phase1Items", updated);
     return { success: true, data: updated };
   } catch (err) {
-    return {
-      success: false,
-      error:
-        err instanceof Error
-          ? err.message
-          : "Unknown error updating phase1 item",
-    };
+    const error =
+      err instanceof Error
+        ? err.message
+        : "Unknown error updating phase1 item";
+    logError("Failed to update phase1 item", err);
+    return { success: false, error };
   }
 }
 
@@ -138,12 +136,11 @@ export async function deletePhase1Item(
     await dbResult.data.put("phase1Items", updated);
     return { success: true, data: undefined };
   } catch (err) {
-    return {
-      success: false,
-      error:
-        err instanceof Error
-          ? err.message
-          : "Unknown error deleting phase1 item",
-    };
+    const error =
+      err instanceof Error
+        ? err.message
+        : "Unknown error deleting phase1 item";
+    logError("Failed to delete phase1 item", err);
+    return { success: false, error };
   }
 }
